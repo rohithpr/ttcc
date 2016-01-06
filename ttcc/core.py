@@ -16,8 +16,8 @@ def parse_device(sentence):
 
     target_device = list(set(words)&set(DEVICES.keys()))
     for device in DEVICES:
-            dev_alias = list(set(words) & set(DEVICES[device]['alias']))
-            target_device.extend(dev_alias)
+            device_alias = list(set(words) & set(DEVICES[device]['alias']))
+            target_device.extend(device_alias)
     return target_device
          
 
