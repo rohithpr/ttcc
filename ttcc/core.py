@@ -4,36 +4,56 @@ DEVICES = {}
 
 def register(device_name, device_details):
     global DEVICES
+
     # Overwrite or ignore a duplicate registration?
     # Check if the device details is in the correct format
     # Check if type is an object of a subclass of TypeBaseClass
-    DEVICES[device_name] = device_details
-
+    
 def parse_device(sentence):
-    pass
+    global DEVICES
+    words = sentence.split()
+    target_device = []
 
-def parse_intent(sentence, operations):
-    pass
+    target_device = list(set(words)&set(DEVICES.keys()))
+    for device in DEVICES:
+            dev_alias = list(set(words) & set(DEVICES[device]['alias']))
+            target_device.extend(dev_alias)
+    return target_device
+         
 
-def parse_args(sentence, arguments):
+def parse_intent(sentence, device):
+    intent = []
+    global DEVICES
+    operations = list(DEVICES[device]['operations'].keys())
+
+    for operation in operations:
+        for trigger in DEVICES[device]['operations'][operation]['triggers']:
+            if re.search(trigger, sentence):
+                intent.append(operation)
+    return intent
+
+def parse_args(sentence, device, intent, operation):
     pass
 
 def parse(sentence):
-    device = parse_device(sentence)
-    if device is None:
-        pass # Return something like {'error': True} or return None
+    devices = []
+    devices = parse_device(sentence)    #devices contains a list of matches devices from the sentence
+    if not devices:
+        print("No device found")
+    else:
+        for device in devices:          #individual device
+            intents = []
+            intents = parse_intent(sentence, device)    #single device can have multiple intents
 
-    operations = DEVICES[device]['operations']
-    intent = parse_intent(sentence, operations)
-    if intent is None:
-        pass # Return something like {'error': True} or return None
+            if not intents:
+                print("No intents for ",device," found")
+            else:
+                for intent in intents:      #individual intent
+                    argument_values = parse_args(sentence, device, intent)
 
-    arguments = DEVICES[device][intent]['arguments']
-    argument_values = parse_args(sentence, arguments)
-
-    response = {
-        'device': device,
-        'intent': intent,
-        'arguments': argument_values
-    }
-    return response
+                    response = {
+                        'device': device,
+                        'intent': intent,
+                        'arguments': argument_values
+                    }
+                    return response
