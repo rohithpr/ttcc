@@ -171,9 +171,14 @@ def process(command, device, output):
     if command['device'] == 'tweet':
         # os.system("chcp 65001")
         return tweet(command, device, output)
+    if command['device'] == 'soundcloud':
+        return soundcloud(command, device, output)
     elif command['device'] == 'tetris':
         return tetris(command, device, output)
 
 def tetris(command, device, output):
+    return output
+
+def soundcloud(command, device, output):
     return output
 

@@ -1,3 +1,4 @@
+
 $(document).ready(function() {
   /* Constants, global variables and clock controllers
    */
@@ -130,6 +131,14 @@ $(document).ready(function() {
     })
   }
 
+  var soundcloudHandler = function(inputContent) {
+    // var messageSoundcloud = function(message) {
+    //   var tetris = $('.soundcloud')[0]
+    //   soundcloud.contentWindow.postMessage(message, '*')
+    console.log("Check 1")
+    s()
+  }
+
 
 
   /* Speech and server controllers
@@ -242,6 +251,11 @@ $(document).ready(function() {
       return
     }
 
+    if (currentSession === 'soundcloud') {
+      soundcloudHandler(inputContent)
+      return
+    }    
+
     if (inputContent === 'quit session' || inputContent === 'quit') {
       clearSession()
       var panel = generateDiv()
@@ -304,6 +318,19 @@ $(document).ready(function() {
               currentSession = 'tetris'
               sessionDuration = 600 // Game will be active for ten minutes without any input
             }
+
+            //If soundcloud
+            if (result.parsed && result.parsed.device === 'soundcloud') {
+              var container = generateDiv()
+              var div = $('<div>')
+                        .addClass('soundcloud')
+                        .append('<p>hello world</p>')
+              container.find('.box').append(div)
+              $('.holder').prepend(container)
+              currentSession = 'soundcloud'
+              sessionDuration = 300 // Game will be active for ten minutes without any input
+            }
+
           }
           // // the below code is only for twitter delete after the interaction is made proper
           // if (result.final === 'twitter_False') {

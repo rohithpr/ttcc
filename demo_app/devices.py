@@ -122,6 +122,19 @@ tetris = {
     }
 }
 
+#Soundcloud
+soundcloud = {
+    'alias': ['soundcloud'],
+    'operations': {
+        '--start': {
+            'triggers': [r'soundcloud'],
+            'arguments': {
+            },
+            'confirm': False,
+        }
+    }
+}
+
 
 # refrigerator = {
 #     'alias': ['refrigerator', 'fridge'],

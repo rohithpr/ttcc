@@ -15,6 +15,7 @@ def setup():
     core.register('totem', devices.totem)
     core.register('tweet', devices.tweet)
     core.register('tetris', devices.tetris)
+    core.register('soundcloud',devices.soundcloud)
 
 @app.route('/')
 def home():
