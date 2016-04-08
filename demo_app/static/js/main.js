@@ -1,4 +1,3 @@
-
 $(document).ready(function() {
   /* Constants, global variables and clock controllers
    */
@@ -17,7 +16,7 @@ $(document).ready(function() {
     oldResult = {}
     sessionDuration = 0
     currentSession = ''
-  }
+  };
 
   var clock = function() {
     if (sessionDuration > 0) {
@@ -45,18 +44,6 @@ $(document).ready(function() {
       speechSynthesis.speak(u)
     }, 1000)
   }
-
-  var generateDiv = function() {
-    var container = $('<div>').addClass('container').css('margin-top', '20px')
-    var row = $('<div>').addClass('row')
-    var col = $('<div>').addClass('col-xs-12')
-    var box = $('<div>').addClass('box')
-    col.append(box)
-    row.append(col)
-    container.append(row)
-    return container
-  }
-
 
   var tetrisHandler = function(inputContent) {
     var messageTetris = function(message) {
@@ -101,8 +88,7 @@ $(document).ready(function() {
     if (commands.length === 0) {
       if (inputContent.search('quit session') !== -1 || inputContent.search('stop session') !== -1) {
         // The session itself is stopped
-
-        var panel = generateDiv()
+        var panel = utils.generateDiv()
         var message = $('<pre>').html('Tetris closed and session terminated')
         panel.find('.box').append(message)
         $('.holder').prepend(panel)
@@ -113,7 +99,7 @@ $(document).ready(function() {
       }
       else if (inputContent.search('quit') !== -1) {
         // Exit only from the game, session is still active
-        var panel = generateDiv()
+        var panel = utils.generateDiv()
         var message = $('<pre>').html('Tetris closed')
         panel.find('.box').append(message)
         $('.holder').prepend(panel)
@@ -131,12 +117,88 @@ $(document).ready(function() {
     })
   }
 
-  var soundcloudHandler = function(inputContent) {
-    // var messageSoundcloud = function(message) {
-    //   var tetris = $('.soundcloud')[0]
-    //   soundcloud.contentWindow.postMessage(message, '*')
-    console.log("Check 1")
-    s()
+
+  //Handles SoundCloud specific operations
+  var soundcloud_handler = function(inputContent) {
+    var player = SC.Widget(document.querySelector('.soundcloud'))
+
+    if (inputContent.search('soundcloud') != -1) {
+      var search_term = inputContent.substring(inputContent.search('soundcloud')+11, inputContent.length)
+      console.log(search_term)
+
+        SC.initialize({
+          client_id : 'CLIENT-ID'
+        })
+
+        SC.get('/tracks', {
+            q: search_term,
+            license: 'cc-by-sa',
+            limit: 50
+        })
+        .then(function(tracks) {
+          var track_url = tracks[3].uri
+          console.log(track_url)
+          player.load(track_url, {auto_play: true})
+
+          (function(){
+            player.bind(SC.Widget.Events.READY, function () { //Fired when the widget has loaded its data
+              console.log('Ready');                         //and is ready to accept external calls
+              player.bind(SC.Widget.Events.FINISH, function () { //Fired when the sound finishes.
+                console.log("Song finished")
+                var panel = utils.generateDiv()
+                var message = $('<pre>').html('Soundcloud closed and session terminated')
+                panel.find('.box').append(message)
+                $('.holder').prepend(panel)
+                $('.soundcloud').remove()
+                clearSession()
+              });
+            });
+          }());
+        });
+    }        
+
+    else {
+      if(inputContent == 'pause') {
+        console.log("Paused")
+        player.pause()
+      }
+
+      else if(inputContent == 'play') {
+        console.log("Play")
+        player.play()
+      }
+
+      else if(inputContent == 'toggle') {
+        console.log("Toggle")
+        player.toggle()
+      }
+      else if (inputContent.search('quit session') !== -1 || inputContent.search('stop session') !== -1) {
+        //To close soundcloud and the session
+        var panel = utils.generateDiv()
+        var message = $('<pre>').html('Soundcloud closed and session terminated')
+        panel.find('.box').append(message)
+        $('.holder').prepend(panel)
+
+        clearSession()
+        $('.soundcloud').remove()
+      }
+
+      else if (inputContent.search('quit') !== -1) {
+        // Exit only from the SoundCloud, session is still active
+        console.log("SoundCloud quiting")
+        var panel = utils.generateDiv()
+        var message = $('<pre>').html('Soundcloud closed')
+        panel.find('.box').append(message)
+        $('.holder').prepend(panel)
+
+        sessionDuration = SESSION_DURATION
+        currentSession = ''
+        $('.soundcloud').remove()
+      }
+
+      return
+      sessionDuration = 300
+    }    
   }
 
 
@@ -155,7 +217,6 @@ $(document).ready(function() {
     streamer.continuous = true
     streamer.interimResults = false
 
-
     streamer.onresult = function(event) {
       var inputContent = ''
       for (var i = event.resultIndex; i < event.results.length; i++) {
@@ -171,7 +232,7 @@ $(document).ready(function() {
       if (isStartSession !== -1) {
         // Saying start session even when a session is active will set it to SESSION_DURATION
         sessionDuration = SESSION_DURATION
-        var panel = generateDiv()
+        var panel = utils.generateDiv()
         var message = $('<pre>').html('Session started')
         panel.find('.box').append(message)
         $('.holder').prepend(panel)
@@ -183,7 +244,7 @@ $(document).ready(function() {
       var isStopSession = inputContent.search('stop session')
       if (isStopSession !== -1) {
         sessionDuration = 0
-        var panel = generateDiv()
+        var panel = utils.generateDiv()
         var message = $('<pre>').html('Session stopped')
         panel.find('.box').append(message)
         $('.holder').prepend(panel)
@@ -220,22 +281,24 @@ $(document).ready(function() {
 
    // Handles voice input
   $('#main-speech').click(function() {
-    var record = function() {
-    if (typeof webkitSpeechRecognition !== 'function') {
-      alert('Please use Google Chrome for voice input')
-      return
-    }
-    var recording = new webkitSpeechRecognition()
-       recording.lang = 'en-IN'
-       recording.onresult = function(event) {
-         $('input[name=command_text]').val(event.results[0][0].transcript)
-         // console.log(event.results[0][0])
-         // Optional
-         // $('#command_form').submit()
-       }
-       recording.start()
-     }
-     record()
+    // var record = function() {
+    // if (typeof webkitSpeechRecognition !== 'function') {
+    //   alert('Please use Google Chrome for voice input')
+    //   return
+    // }
+    // var recording = new webkitSpeechRecognition()
+    //    recording.lang = 'en-IN'
+    //    recording.onresult = function(event) {
+    //      $('input[name=command_text]').val(event.results[0][0].transcript)
+    //      // console.log(event.results[0][0])
+    //      // Optional
+    //      // $('#command_form').submit()
+    //    }
+    //    recording.start()
+    //  }
+    //  record()
+    $('input[name=command_text]').val("soundcloud")
+    $('#main-submit').click()
   })
 
 
@@ -252,13 +315,13 @@ $(document).ready(function() {
     }
 
     if (currentSession === 'soundcloud') {
-      soundcloudHandler(inputContent)
+      soundcloud_handler(inputContent)
       return
     }    
 
     if (inputContent === 'quit session' || inputContent === 'quit') {
       clearSession()
-      var panel = generateDiv()
+      var panel = utils.generateDiv()
       return
     }
 
@@ -284,7 +347,7 @@ $(document).ready(function() {
             oldResult = {}
             newCommand = true
             var parsed = JSON.stringify(result.parsed, null, 2)
-            var panel = generateDiv()
+            var panel = utils.generateDiv()
             var parsed = $('<pre>').html(parsed)
             var message = $('<pre>').html(result.message)
             panel.find('.box').append(message)
@@ -292,7 +355,7 @@ $(document).ready(function() {
             $('.holder').prepend(panel)
 
             if (result.tweet) {
-              var panel = generateDiv()
+              var panel = utils.generateDiv()
               var message = $('<pre>').html('Tweets found:')
               var tweets = $('<ul>')
               result.tweet.forEach(function(tweet) {
@@ -305,7 +368,7 @@ $(document).ready(function() {
 
             // If tetris
             if (result.parsed && result.parsed.device === 'tetris') {
-              var container = generateDiv()
+              var container = utils.generateDiv()
               var iframe = $('<iframe>')
                             .attr('src', 'tetris')
                             .attr('width', '100%')
@@ -319,16 +382,23 @@ $(document).ready(function() {
               sessionDuration = 600 // Game will be active for ten minutes without any input
             }
 
-            //If soundcloud
+            /*If soundcloud then it creates an iframe where the soundcloud widget
+              is loaded and a function call is made to soundcloud_handler()              
+            */
             if (result.parsed && result.parsed.device === 'soundcloud') {
-              var container = generateDiv()
-              var div = $('<div>')
-                        .addClass('soundcloud')
-                        .append('<p>hello world</p>')
-              container.find('.box').append(div)
+              var container = utils.generateDiv()
+              var iframe = $('<iframe>')
+                            // .attr('src','static/img/soundcloud.png')
+                            .attr('src','https://w.soundcloud.com/player/?url=http%3A%2F%2Fapi.soundlcoud.com%2Ftracks%2F1848538&show_artwork=true')
+                            .attr('width', '100%')
+                            .attr('height', '150px')
+                            .addClass('soundcloud')
+                            .append($('<div>').addClass('holder'))
+              container.find('.box').append(iframe).removeClass('box')
               $('.holder').prepend(container)
               currentSession = 'soundcloud'
-              sessionDuration = 300 // Game will be active for ten minutes without any input
+              soundcloud_handler(inputContent)
+              sessionDuration = 300 // Soundcloud will be active for five minutes without any input
             }
 
           }
@@ -353,7 +423,7 @@ $(document).ready(function() {
             var parsed = JSON.stringify(result.parsed, null, 2)
             oldResult = result
             newCommand = false
-            var panel = generateDiv()
+            var panel = utils.generateDiv()
             var message = $('<pre>').html(result.message)
             var parsed = $('<pre>').html(parsed)
             panel.find('.box').append(message)

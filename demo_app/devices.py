@@ -113,9 +113,10 @@ tweet = {
 tetris = {
     'alias': ['tetris'],
     'operations': {
-        '--start': {
+        '--play': {
             'triggers': [r'tetris'],
             'arguments': {
+                'name': ['{{trigger}}(?P<name>( .*)?)'],
             },
             'confirm': False,
         }
@@ -126,9 +127,10 @@ tetris = {
 soundcloud = {
     'alias': ['soundcloud'],
     'operations': {
-        '--start': {
+        '--play': {
             'triggers': [r'soundcloud'],
             'arguments': {
+                'name': ['{{trigger}}(?P<name>( .*)?)'],
             },
             'confirm': False,
         }
