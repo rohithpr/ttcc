@@ -172,7 +172,7 @@ $(document).ready(function() {
           license: 'cc-by-sa',
           limit: 10
       })
-      .then(function(tracks) {
+      .then(function(tracks) { // Tracks contains a list of songs retrieved from SCloud
         result.parsed.intent = '--play-song' //Mimic a request to server for continuation of selection of song from a list
         newCommand = false
 
