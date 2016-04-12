@@ -3,13 +3,20 @@ $(document).ready(function() {
    */
 
   var CLOCK_INTERVAL = 1000 // Clock will be called every second (1000 ms)
-  var SESSION_DURATION = 120 // Active for this long without any activity
+  var SESSION_DURATION = 300 // Active for this long without any activity
 
   var newCommand // Will be sent to server
   var oldResult // Will be sent to server
 
   var sessionDuration // Time left before the session expires
   var currentSession // If a front end app wants to own the session it can tag itself
+
+  var player // SoundCloud widget reference
+
+  // Initializing SCloud object
+  SC.initialize({
+    client_id : 'c9908bc952a42fbf6b8e30c4b0ad6899'
+  })
 
   var clearSession = function() {
     newCommand = true
@@ -118,15 +125,14 @@ $(document).ready(function() {
   }
 
 
-  //Handles SoundCloud specific operations
-  var soundcloud_handler = function(inputContent) {
-    console.log("Check 3")
-    var player;
+  // Handles SoundCloud specific operations
+  var soundcloud_handler = function(result) {
 
-    var iframeLoader = function() {
+    // Creating iframe in order to load the widget
+    var iframeGenerator = function() {
       var container = utils.generateDiv()
       var iframe = $('<iframe>')
-                    .attr('src','https://w.soundcloud.com/player/?url=http%3A%2F%2Fapi.soundlcoud.com%2Ftracks%2F1848538&show_artwork=true')
+                    .attr('src','https://w.soundcloud.com/player/?url=http%3A%2F%2Fapi.soundlcoud.com%2Ftracks%2F1848538&show_artwork=true') // Source of iframe has a link to a default song as an empty widget cannot be loaded
                     .attr('width', '100%')
                     .attr('height', '150px')
                     .addClass('soundcloud')
@@ -135,98 +141,98 @@ $(document).ready(function() {
       $('.holder').prepend(container)
     }
 
-    var searchTerm = inputContent.substring(inputContent.search('soundcloud')+11, inputContent.length)
-    console.log("Check 4")
-    console.log(searchTerm)
+    // Handles loading the SCloud widget and playing the selected song.
+    if (result.parsed.intent === '--play-song') {
+      iframeGenerator()
 
-      SC.initialize({ //Initializing your SoundCloud widget using the Client-ID
-        client_id : 'c9908bc952a42fbf6b8e30c4b0ad6899'
-      })
+      // Creating a widget using the iframe classname 'soundcloud'
+      player = SC.Widget(document.querySelector('.soundcloud'))
 
-      SC.get('/tracks', {
-          q: searchTerm,
-          license: 'cc-by-sa',
-          limit: 100
-      })
-      .then(function(tracks) {
-        console.log(tracks)
-        var optionsPanel = utils.generateDiv()
-        var listOfOptions = $('<ol>')
-                            .addClass('listofoptions')
-        for (var outerLoop = 0; outerLoop<tracks.length; outerLoop += 1) { // Putting tracks in a list to display
-          // for (var innerLoop = 0; innerLoop<outerLoop; innerLoop++) {   // Input and display of tracks not yet handled 
-            $('.listofoptions').append('<li>').append(tracks[i].title)     //Lot of missing code
-          // }
-        }
-        optionsPanel.find('.box').append(listOfOptions)
-        $('.holder').prepend(optionsPanel)
+      // Loads the selected song
+      player.load(result.parsed.arguments.name.uri, {auto_play: true})
 
-        var indexOfSong =  utils.wordToNum(inputContent)
-        if (indexOfSong < 10) {
-          var track_url = tracks[indexOfSong].uri
-          console.log(track_url)
-          iframeLoader()
-          player = SC.Widget(document.querySelector('.soundcloud')) //Extracting soundcloud iframe classname using queryselector and passing it as a parameter to SC.Widget() which creates a reference to the widget https://developers.soundcloud.com/docs/api/html5-widget
-          player.load(track_url, {auto_play: true})
-
-          (function(){
-            player.bind(SC.Widget.Events.READY, function () { //Fired when the widget has loaded its data
-              console.log('Ready');                         //and is ready to accept external calls
-              player.bind(SC.Widget.Events.FINISH, function () { //Fired when the sound finishes.
-                console.log("Song finished")
-                var panel = utils.generateDiv()
-                var message = $('<pre>').html('Soundcloud closed and session terminated')
-                panel.find('.box').append(message)
-                $('.holder').prepend(panel)
-                $('.soundcloud').remove()
-                clearSession()
-              });
-            });
-          }());
-        }          
-      });        
-
-
-      if(inputContent == 'pause') {
-        console.log("Paused")
-        player.pause()
-      }
-
-      else if(inputContent == 'play') {
-        console.log("Play")
-        player.play()
-      }
-
-      else if(inputContent == 'toggle') {
-        console.log("Toggle")
-        player.toggle()
-      }
-      else if (inputContent.search('quit session') !== -1 || inputContent.search('stop session') !== -1) {
-        //To close soundcloud and the session
+      // Register an asynchronous function that will be called when the song is over
+      player.bind(SC.Widget.Events.FINISH, function() {
+        console.log("Song finished")
         var panel = utils.generateDiv()
         var message = $('<pre>').html('Soundcloud closed and session terminated')
         panel.find('.box').append(message)
         $('.holder').prepend(panel)
-
+        $('.soundcloud').remove() // Removing the SoundCloud iframe
         clearSession()
-        $('.soundcloud').remove()
-      }
+      });
+    }
 
-      else if (inputContent.search('quit') !== -1) {
-        // Exit only from the SoundCloud, session is still active
-        console.log("SoundCloud quiting")
+    // Lists the songs matching the given name
+    else if (result.parsed.intent === '--list') {
+
+      // 'get' retrieves the list of songs from SoundCloud
+      SC.get('/tracks', {
+          q: result.parsed.arguments.name,
+          license: 'cc-by-sa',
+          limit: 10
+      })
+      .then(function(tracks) {
+        result.parsed.intent = '--play-song' //Mimic a request to server for continuation of selection of song from a list
+        newCommand = false
+
+         // Creating an array of dictionaries from an array of tracks which stores the uri and song name
+        var options = tracks.map(function(track) { 
+          return {
+            'uri': track.uri,
+            'optionName': track.title
+          }
+        })
+        result = {
+          'message': 'Which song do you want to play?',
+          'options': options,
+          'option-name': 'name',
+          'option-type': 'arguments',
+          'type': 'option',
+          'final': false,
+          'error': false,
+          'parsed': result.parsed
+        }
+        oldResult = result
         var panel = utils.generateDiv()
-        var message = $('<pre>').html('Soundcloud closed')
+        var message = $('<pre>').html(result.message)
+        var parsed = $('<pre>').html(parsed)
         panel.find('.box').append(message)
         $('.holder').prepend(panel)
+        if (result.options !== undefined) {
+          var optionsPre = $('<pre>')
+          var options = $('<ol>')
+          result.options.forEach(function(option) {
+            options.append($('<li>').html(option.optionName))
+          })
+          optionsPre.append(options)
+          panel.find('.box').append(optionsPre)
+        }
+        $('.holder').prepend(container)
+      })
+    }
 
-        sessionDuration = SESSION_DURATION
-        currentSession = ''
-        $('.soundcloud').remove()
-      }
+    else if (result.parsed.intent === '--pause') {
+      console.log("Paused SC")
+      player.pause()
+    }
 
-      return
-      sessionDuration = 300
+    // Plays the song only if it has been paused
+    else if (result.parsed.intent === '--play') {
+      console.log("Playing SC")
+      player.play()
+    }
+
+    // Toggles the widget
+    else if (result.parsed.intent === '--play-pause') {
+      console.log("Toggle SC")
+      player.toggle()
+    }
+
+    else if (result.parsed.intent === '--quit') {
+      console.log("Quiting SC")
+      $('.soundcloud').remove() // Removing the SoundCloud iframe
+    }
   }
 
   /* Speech and server controllers
@@ -289,7 +295,7 @@ $(document).ready(function() {
 
 
       streamer.onend = function(event) {
-        streamer.start()
+        // streamer.start()
      }
    };
 
@@ -299,7 +305,7 @@ $(document).ready(function() {
     clearSession()
     setupStreamer()
     if (typeof webkitSpeechRecognition === 'function') {
-      streamer.start()
+      // streamer.start()
     }
     $('#result').hide().parent().hide()
   })()
@@ -307,23 +313,7 @@ $(document).ready(function() {
 
    // Handles voice input
   $('#main-speech').click(function() {
-    // var record = function() {
-    // if (typeof webkitSpeechRecognition !== 'function') {
-    //   alert('Please use Google Chrome for voice input')
-    //   return
-    // }
-    // var recording = new webkitSpeechRecognition()
-    //    recording.lang = 'en-IN'
-    //    recording.onresult = function(event) {
-    //      $('input[name=command_text]').val(event.results[0][0].transcript)
-    //      // console.log(event.results[0][0])
-    //      // Optional
-    //      // $('#command_form').submit()
-    //    }
-    //    recording.start()
-    //  }
-    //  record()
-    $('input[name=command_text]').val("soundcloud pink floyd")
+    $('input[name=command_text]').val("soundcloud list in the end")
     $('#main-submit').click()
   })
 
@@ -340,12 +330,6 @@ $(document).ready(function() {
       return
     }
 
-    if (currentSession === 'soundcloud') {
-      console.log("Check 2")
-      soundcloud_handler(inputContent)
-      return
-    }    
-
     if (inputContent === 'quit session' || inputContent === 'quit') {
       clearSession()
       var panel = utils.generateDiv()
@@ -353,17 +337,19 @@ $(document).ready(function() {
     }
 
     var submit = function() {
+      console.log(inputContent)
       var data = {}
       data.input = inputContent
       data.newCommand = newCommand // Global variable
       data.oldResult = JSON.stringify(oldResult)
       // console.log(command)
+      console.log('submit:', data)
       $.ajax({
         url: '/command',
         method: 'POST',
         data: data,
         success: function(result) {
-          console.log(result)
+          console.log('success:', result)
           if (result.error === true) {
             // Handle error
              oldResult = {}
@@ -410,25 +396,13 @@ $(document).ready(function() {
             }
 
             /*If soundcloud then it creates an iframe where the soundcloud widget
-              is loaded and a function call is made to soundcloud_handler()              
+              is loaded and a function call is made to soundcloud_handler()
             */
             if (result.parsed && result.parsed.device === 'soundcloud') {
-              console.log("Check 1")
-              // var container = utils.generateDiv()
-              // var iframe = $('<iframe>')
-              //               // .attr('src','static/img/soundcloud.png')
-              //               .attr('src','https://w.soundcloud.com/player/?url=http%3A%2F%2Fapi.soundlcoud.com%2Ftracks%2F1848538&show_artwork=true')
-              //               .attr('width', '100%')
-              //               .attr('height', '150px')
-              //               .addClass('soundcloud')
-              //               .append($('<div>').addClass('holder'))
-              // container.find('.box').append(iframe).removeClass('box')
-              // $('.holder').prepend(container)
               currentSession = 'soundcloud'
-              soundcloud_handler(inputContent)
-              sessionDuration = 300 // Soundcloud will be active for five minutes without any input
+              soundcloud_handler(result)
+              sessionDuration = SESSION_DURATION // Soundcloud will be active for five minutes without any input
             }
-
           }
           // // the below code is only for twitter delete after the interaction is made proper
           // if (result.final === 'twitter_False') {
@@ -465,8 +439,17 @@ $(document).ready(function() {
               optionsPre.append(options)
               panel.find('.box').append(optionsPre)
             }
+            // to handle when input provided with no intent or arguments
+            if(result.type === 'continue') {
+              var optionsPre = $('<pre>')
+              var messages= $('<ol>')
+              result.example.forEach(function(option) {
+                messages.append($('<li>').html(option))
+              })
+              optionsPre.append(messages)
+              panel.find('.box').append(optionsPre)
+            }
             panel.find('.box').append(parsed)
-
           }
           if (typeof webkitSpeechRecognition === 'function') {
             streamer.stop()

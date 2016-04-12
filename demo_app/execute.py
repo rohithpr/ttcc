@@ -2,6 +2,12 @@ from TwitterAPI import TwitterAPI
 import os
 import re
 
+
+consumer_key = "Tldm6plGgyeGsxhxb2GQj6qyU"
+consumer_secret = "ueEuRr6a2ndxZ4iwrXrXL2qbFPvzU9Bfp8xrPrjY9CZOAS3I37"
+access_token_secret = "UIoINgPNBSrflcgZFa3ZkyJvKowLyDFm1HQw47D2voSWL"
+access_token_key = "2296276094-ywo927aAwEsO9rNYBw8734QGeU0oT3Xe1caRfm2"
+
 def filename_matcher(text, filename):
     if text == filename:
         return True
@@ -20,6 +26,9 @@ def totem(command, device, output):
     cl = 'totem ' + command['intent']
     if command['intent'] == '--play':
 
+        for alias in device['alias']:
+            command['arguments']['name'] = command['arguments']['name'].replace(alias, 'totem')
+
         # Remove 'totem' and 'in','with','using' if it exists in the filname
         if ('totem') in command['arguments']['name']:
             temp = command['arguments']['name'].split(' ')
@@ -28,7 +37,7 @@ def totem(command, device, output):
                 del temp[len(temp)-1]
             command['arguments']['name'] = ' '.join(temp)
 
-        # Only `totem --play` will unpause the application
+        #Only `totem --play` will unpause the application
         # If the name of a song is mentioned `totem --play songname` will be executed
         if command['arguments']['name']:
             command['arguments']['name'] = command['arguments']['name'].strip(' ')
@@ -39,7 +48,7 @@ def totem(command, device, output):
             for dirName, subdirList, fileList in os.walk("./"):
                 for filename in fileList:
                     if filename_matcher(command['arguments']['name'], filename):
-                        print('Matched: ', filename)
+                        # print('Matched: ', filename)
                         matched_files.append(filename)
             if len(matched_files) == 0:
                 output['message'] = 'No files were found'
@@ -63,7 +72,6 @@ def totem(command, device, output):
                 }
                 cl += ' "' + matched_files[0] + '"'
     cl += ' &'
-    print(cl)
     return_value = os.system(cl)
     if return_value == 0:
         return output
@@ -71,55 +79,46 @@ def totem(command, device, output):
     return output
 
 def tweet(command, device, output):
-    tweets=[]
-    k=1
-    # print(command)
-    if command['intent'] == 'examples':
-        example =[]
-        example.append("fetch/get tweets by/of @screen_name")
-        example.append("fetch/get tweets on/about @some_name")
-        output['final'] = 'twitter_False'
-        output['message'] = 'Enter as shown below'
-        output['options'] = example
-        output['type'] = 'option'
-        output['option-type'] = 'arguments' # Refer JSON to know what this refers to
-        output['option-name'] = 'name' # Refer JSON to know what this refers to
-        return output
+    tweets = []
+    others = True # used to differentitae trending tweets from others
 
     try:
         api = TwitterAPI(consumer_key, consumer_secret, access_token_key, access_token_secret)
         obj = command['arguments']['name']
 
-        if re.match('^[ ]*$', obj):
-            obj=''
+        if command['intent'] == 'trends/place':
+            others = False
+            res = api.request('trends/available') # to find the what on earth id 'an id for a particular place'
+            for i in res:
+                if i['country'].lower() == command['arguments']['name'][1:]:
+                    woeid = i['woeid']
 
-        if obj is '':
-            example =[]
-            example.append("fetch/get tweets by/of @screen_name")
-            example.append("fetch/get tweets on/about @some_name")
-            output['final'] = 'twitter_False' # use this for time being
-            output['message'] = 'Enter as shown below'
-            output['options'] = example
-            output['type'] = 'option'
-            output['option-type'] = 'arguments' # Refer JSON to know what this refers to
-            output['option-name'] = 'name' # Refer JSON to know what this refers to
-            return output
+            response = api.request(command['intent'], {'id':woeid}) # you only get links to trending news in twitter
+            count = 0 # specifies no of tweets for places 'currently  5'
+            for item in response:
+                count += 1
+                if not re.match('[a-zA-Z0-9]',item['query'][0]):
+                    ret_query = item['query'][3:]
+                else:
+                    ret_query = item['query']
+                tweets.append(ret_query + '<br />       ' + str(item['url'])) # change the output format as required
+                if count == 5:
+                    break
 
-        if command['intent'] == 'statuses/user_timeline':
+        elif command['intent'] == 'statuses/user_timeline':
             query = 'screen_name'
+
         else:
             query = 'q'
 
-        response = api.request(command['intent'], {query:obj, 'count':5})
-        # print(response.status_code)
-        # print(response.text)
+        if others == True: # if the request is not on trending news
+            response = api.request(command['intent'], {query:obj, 'count':5})
+            print(response.status_code)
 
-        for item in response:
-            print(item['text'])
-            string = item['text'].replace('\n', '<br />        ')
-            tweets.append(string)
-            print(item['text'])
-            k+=1
+            for item in response:
+                string = item['text'].replace('\n', '<br />')
+                tweets.append(string)
+                # print(item['text'])
 
         # FOR MAKING HREF LINKS
         no_of_tweets = len(tweets)
@@ -127,7 +126,7 @@ def tweet(command, device, output):
             tweet_length = len(tweets[i])
             while 1:
                 first_char = 0
-                index = tweets[i].find('https', first_char, tweet_length)
+                index = tweets[i].find('http', first_char, tweet_length)
                 if index == -1:
                     break
                 m = index # 'm' to find the end of https
@@ -144,7 +143,7 @@ def tweet(command, device, output):
                 blank = '_blank'
                 replace = '<a href = '+text+' target = '+blank+'>'+text+'</a> '
                 tweets[i] = tweets[i].replace('replace', replace)
-                print(tweets[i])
+                # print(tweets[i])
 
         output = {
              'commands': [],
@@ -169,7 +168,6 @@ def process(command, device, output):
     if command['device'] == 'totem':
         return totem(command, device, output)
     if command['device'] == 'tweet':
-        # os.system("chcp 65001")
         return tweet(command, device, output)
     if command['device'] == 'soundcloud':
         return soundcloud(command, device, output)
