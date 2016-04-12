@@ -159,20 +159,20 @@ tetris = {
     }
 }
 
-#Soundcloud
+#Soundcloud Docs can be found at https://developers.soundcloud.com/
 soundcloud = {
     'alias': [r'soundcloud'],
     'operations': {
         '--pause': {
             'triggers': [r'pause'],
             'arguments': {
-            },  
+            },
             'confirm': False
         },
         '--play': {
             'triggers': [r'play'],
             'arguments': {
-            },  
+            },
             'confirm': False
         },
         '--play-song': {

@@ -11,7 +11,7 @@ $(document).ready(function() {
   var sessionDuration // Time left before the session expires
   var currentSession // If a front end app wants to own the session it can tag itself
 
-  var player // SoundCloud widget reference
+  var player // SoundCloud widget reference. Docs can be found at https://developers.soundcloud.com/docs/api/html5-widget
 
   // Initializing SCloud object
   SC.initialize({
