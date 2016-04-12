@@ -82,21 +82,21 @@ def command():
 
     try:
         result, device,output = core.parse(command, newCommand, oldResult, output)
-        
+
         output['parsed'] = result
         if output['parsed']['intent'] == None: # no intent given, so ask user to give one
             output['final'] = False
             output['type'] = 'continue' # user needs to provide the correct command
-            output['example'] = device['operations']['examples_intent']['arguments']['example'] # provide the required message and 
+            output['example'] = device['operations']['examples_intent']['arguments']['example'] # provide the required message and
             output['message'] = device['operations']['examples_intent']['arguments']['message'] # example in devices.py
             return jsonify(output)
-      
+
         # if 'name' in output['parsed']['arguments'].keys(): # some command has no arguments,ex: 'totem pause', see devices.py
         #     print(2, output)
-        #     if output['parsed']['arguments']['name'] == '': # no arguments given, so ask user to give one 
+        #     if output['parsed']['arguments']['name'] == '': # no arguments given, so ask user to give one
         #         output['final'] = False
         #         output['type'] = 'continue'
-        #         output['example'] = device['operations']['examples_arguments']['arguments']['example'] # provide the required message 
+        #         output['example'] = device['operations']['examples_arguments']['arguments']['example'] # provide the required message
         #         output['message'] = device['operations']['examples_arguments']['arguments']['message'] # and example in devices.py
         #         return jsonify(output)
 

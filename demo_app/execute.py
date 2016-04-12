@@ -3,10 +3,10 @@ import os
 import re
 
 
-consumer_key = "Tldm6plGgyeGsxhxb2GQj6qyU"
-consumer_secret = "ueEuRr6a2ndxZ4iwrXrXL2qbFPvzU9Bfp8xrPrjY9CZOAS3I37"
-access_token_secret = "UIoINgPNBSrflcgZFa3ZkyJvKowLyDFm1HQw47D2voSWL"
-access_token_key = "2296276094-ywo927aAwEsO9rNYBw8734QGeU0oT3Xe1caRfm2"
+consumer_key = ""
+consumer_secret = ""
+access_token_secret = ""
+access_token_key = ""
 
 def filename_matcher(text, filename):
     if text == filename:
@@ -179,4 +179,3 @@ def tetris(command, device, output):
 
 def soundcloud(command, device, output):
     return output
-

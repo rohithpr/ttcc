@@ -126,7 +126,7 @@ $(document).ready(function() {
 
 
   // Handles SoundCloud specific operations
-  var soundcloud_handler = function(result) {
+  var soundCloudHandler = function(result) {
 
     // Creating iframe in order to load the widget
     var iframeGenerator = function() {
@@ -177,7 +177,7 @@ $(document).ready(function() {
         newCommand = false
 
          // Creating an array of dictionaries from an array of tracks which stores the uri and song name
-        var options = tracks.map(function(track) { 
+        var options = tracks.map(function(track) {
           return {
             'uri': track.uri,
             'optionName': track.title
@@ -295,7 +295,7 @@ $(document).ready(function() {
 
 
       streamer.onend = function(event) {
-        // streamer.start()
+        streamer.start()
      }
    };
 
@@ -305,7 +305,7 @@ $(document).ready(function() {
     clearSession()
     setupStreamer()
     if (typeof webkitSpeechRecognition === 'function') {
-      // streamer.start()
+      streamer.start()
     }
     $('#result').hide().parent().hide()
   })()
@@ -342,7 +342,6 @@ $(document).ready(function() {
       data.input = inputContent
       data.newCommand = newCommand // Global variable
       data.oldResult = JSON.stringify(oldResult)
-      // console.log(command)
       console.log('submit:', data)
       $.ajax({
         url: '/command',
@@ -395,13 +394,11 @@ $(document).ready(function() {
               sessionDuration = 600 // Game will be active for ten minutes without any input
             }
 
-            /*If soundcloud then it creates an iframe where the soundcloud widget
-              is loaded and a function call is made to soundcloud_handler()
-            */
+            // If soundcloud
             if (result.parsed && result.parsed.device === 'soundcloud') {
               currentSession = 'soundcloud'
-              soundcloud_handler(result)
-              sessionDuration = SESSION_DURATION // Soundcloud will be active for five minutes without any input
+              soundCloudHandler(result)
+              sessionDuration = SESSION_DURATION
             }
           }
           // // the below code is only for twitter delete after the interaction is made proper
