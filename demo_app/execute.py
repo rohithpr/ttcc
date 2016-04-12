@@ -2,7 +2,6 @@ from TwitterAPI import TwitterAPI
 import os
 import re
 
-
 consumer_key = ""
 consumer_secret = ""
 access_token_secret = ""
@@ -25,7 +24,6 @@ def filename_matcher(text, filename):
 def totem(command, device, output):
     cl = 'totem ' + command['intent']
     if command['intent'] == '--play':
-
         for alias in device['alias']:
             command['arguments']['name'] = command['arguments']['name'].replace(alias, 'totem')
 
@@ -41,7 +39,7 @@ def totem(command, device, output):
         # If the name of a song is mentioned `totem --play songname` will be executed
         if command['arguments']['name']:
             command['arguments']['name'] = command['arguments']['name'].strip(' ')
-
+            
             matched_files = [] # Keep track of all the files that match
 
             # Walk in the required directories to find music
@@ -85,14 +83,12 @@ def tweet(command, device, output):
     try:
         api = TwitterAPI(consumer_key, consumer_secret, access_token_key, access_token_secret)
         obj = command['arguments']['name']
-
         if command['intent'] == 'trends/place':
             others = False
             res = api.request('trends/available') # to find the what on earth id 'an id for a particular place'
             for i in res:
                 if i['country'].lower() == command['arguments']['name'][1:]:
                     woeid = i['woeid']
-
             response = api.request(command['intent'], {'id':woeid}) # you only get links to trending news in twitter
             count = 0 # specifies no of tweets for places 'currently  5'
             for item in response:
@@ -119,7 +115,7 @@ def tweet(command, device, output):
                 string = item['text'].replace('\n', '<br />')
                 tweets.append(string)
                 # print(item['text'])
-
+        
         # FOR MAKING HREF LINKS
         no_of_tweets = len(tweets)
         for i in range(no_of_tweets):
@@ -154,16 +150,16 @@ def tweet(command, device, output):
              'type': None,
              'tweet': tweets
         }
-        return output
-
-    except:
-        output = {
-           'message':'invalid input',
+        return output    
+    
+    except:    
+        output = {    
+           'message':'invalid input', 
            'error':True,
            'final':True
-        }
-        return output
-
+        }    
+        return output    
+ 
 def process(command, device, output):
     if command['device'] == 'totem':
         return totem(command, device, output)

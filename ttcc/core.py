@@ -26,6 +26,7 @@ def parse_device(sentence):
 
 def parse_intent(sentence, operations):
     # Limited to one operation only. We can add conflict handling later if required
+    print(0)
     for operation_name in operations.keys():
         operation = operations[operation_name]
         for trigger in operation['triggers']:
@@ -91,9 +92,19 @@ def parse(sentence, newCommand, oldResult, output):
         
         if intent is None:
             return get_intent(target_device,output)
+<<<<<<< HEAD
 
         arguments = intent['operation']['arguments']
         argument_values = parse_args(sentence, intent)
+=======
+            # print("error")
+            # return {'error':True}, target_device
+            # pass # Return something like {'error': True} or return None]
+
+        arguments = intent['operation']['arguments']
+        argument_values = parse_args(sentence, intent)
+        print(argument_values)
+>>>>>>> 4096d83a5e1f58adb5313939bfa445fdb9e2192a
         if 'name' in arguments.keys():
             if re.match('^[ ]*$',argument_values['name']):
                 argument_values['name'] = ''
@@ -134,10 +145,20 @@ def get_intent(target_device, output): # called when no intent is mathced, ask u
     return response, device, output
 
 def get_arguments(target_device, intent, argument_values, output): # calls when no argument is given, ask user to provide
+<<<<<<< HEAD
+=======
+    print('arg')
+>>>>>>> 4096d83a5e1f58adb5313939bfa445fdb9e2192a
     response = {
         'device' : target_device,
         'intent' : intent['operation_name'],
         'arguments':argument_values
     }
+<<<<<<< HEAD
     device = DEVICES[target_device]
     return response, device, output
+=======
+    print(argument_values['name'])
+    device = DEVICES[target_device]
+    return response, device, output
+>>>>>>> 4096d83a5e1f58adb5313939bfa445fdb9e2192a
