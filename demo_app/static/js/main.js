@@ -120,24 +120,53 @@ $(document).ready(function() {
 
   //Handles SoundCloud specific operations
   var soundcloud_handler = function(inputContent) {
-    var player = SC.Widget(document.querySelector('.soundcloud'))
+    console.log("Check 3")
+    var player;
 
-    if (inputContent.search('soundcloud') != -1) {
-      var search_term = inputContent.substring(inputContent.search('soundcloud')+11, inputContent.length)
-      console.log(search_term)
+    var iframeLoader = function() {
+      var container = utils.generateDiv()
+      var iframe = $('<iframe>')
+                    .attr('src','https://w.soundcloud.com/player/?url=http%3A%2F%2Fapi.soundlcoud.com%2Ftracks%2F1848538&show_artwork=true')
+                    .attr('width', '100%')
+                    .attr('height', '150px')
+                    .addClass('soundcloud')
+                    .append($('<div>').addClass('holder'))
+      container.find('.box').append(iframe).removeClass('box')
+      $('.holder').prepend(container)
+    }
 
-        SC.initialize({
-          client_id : 'CLIENT-ID'
-        })
+    var searchTerm = inputContent.substring(inputContent.search('soundcloud')+11, inputContent.length)
+    console.log("Check 4")
+    console.log(searchTerm)
 
-        SC.get('/tracks', {
-            q: search_term,
-            license: 'cc-by-sa',
-            limit: 50
-        })
-        .then(function(tracks) {
-          var track_url = tracks[3].uri
+      SC.initialize({ //Initializing your SoundCloud widget using the Client-ID
+        client_id : 'c9908bc952a42fbf6b8e30c4b0ad6899'
+      })
+
+      SC.get('/tracks', {
+          q: searchTerm,
+          license: 'cc-by-sa',
+          limit: 100
+      })
+      .then(function(tracks) {
+        console.log(tracks)
+        var optionsPanel = utils.generateDiv()
+        var listOfOptions = $('<ol>')
+                            .addClass('listofoptions')
+        for (var outerLoop = 0; outerLoop<tracks.length; outerLoop += 1) { // Putting tracks in a list to display
+          // for (var innerLoop = 0; innerLoop<outerLoop; innerLoop++) {   // Input and display of tracks not yet handled 
+            $('.listofoptions').append('<li>').append(tracks[i].title)     //Lot of missing code
+          // }
+        }
+        optionsPanel.find('.box').append(listOfOptions)
+        $('.holder').prepend(optionsPanel)
+
+        var indexOfSong =  utils.wordToNum(inputContent)
+        if (indexOfSong < 10) {
+          var track_url = tracks[indexOfSong].uri
           console.log(track_url)
+          iframeLoader()
+          player = SC.Widget(document.querySelector('.soundcloud')) //Extracting soundcloud iframe classname using queryselector and passing it as a parameter to SC.Widget() which creates a reference to the widget https://developers.soundcloud.com/docs/api/html5-widget
           player.load(track_url, {auto_play: true})
 
           (function(){
@@ -154,10 +183,10 @@ $(document).ready(function() {
               });
             });
           }());
-        });
-    }        
+        }          
+      });        
 
-    else {
+
       if(inputContent == 'pause') {
         console.log("Paused")
         player.pause()
@@ -198,10 +227,7 @@ $(document).ready(function() {
 
       return
       sessionDuration = 300
-    }    
   }
-
-
 
   /* Speech and server controllers
    */
@@ -297,7 +323,7 @@ $(document).ready(function() {
     //    recording.start()
     //  }
     //  record()
-    $('input[name=command_text]').val("soundcloud")
+    $('input[name=command_text]').val("soundcloud pink floyd")
     $('#main-submit').click()
   })
 
@@ -315,6 +341,7 @@ $(document).ready(function() {
     }
 
     if (currentSession === 'soundcloud') {
+      console.log("Check 2")
       soundcloud_handler(inputContent)
       return
     }    
@@ -386,16 +413,17 @@ $(document).ready(function() {
               is loaded and a function call is made to soundcloud_handler()              
             */
             if (result.parsed && result.parsed.device === 'soundcloud') {
-              var container = utils.generateDiv()
-              var iframe = $('<iframe>')
-                            // .attr('src','static/img/soundcloud.png')
-                            .attr('src','https://w.soundcloud.com/player/?url=http%3A%2F%2Fapi.soundlcoud.com%2Ftracks%2F1848538&show_artwork=true')
-                            .attr('width', '100%')
-                            .attr('height', '150px')
-                            .addClass('soundcloud')
-                            .append($('<div>').addClass('holder'))
-              container.find('.box').append(iframe).removeClass('box')
-              $('.holder').prepend(container)
+              console.log("Check 1")
+              // var container = utils.generateDiv()
+              // var iframe = $('<iframe>')
+              //               // .attr('src','static/img/soundcloud.png')
+              //               .attr('src','https://w.soundcloud.com/player/?url=http%3A%2F%2Fapi.soundlcoud.com%2Ftracks%2F1848538&show_artwork=true')
+              //               .attr('width', '100%')
+              //               .attr('height', '150px')
+              //               .addClass('soundcloud')
+              //               .append($('<div>').addClass('holder'))
+              // container.find('.box').append(iframe).removeClass('box')
+              // $('.holder').prepend(container)
               currentSession = 'soundcloud'
               soundcloud_handler(inputContent)
               sessionDuration = 300 // Soundcloud will be active for five minutes without any input
