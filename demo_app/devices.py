@@ -94,7 +94,7 @@ totem = {
             'confirm':False
         },
     }
-}
+} #20 words
 
 tweet = {
     'alias' : ['tweet', 'tweets'],
@@ -114,7 +114,7 @@ tweet = {
             'confirm': False
          },
          'trends/place':{
-            'triggers': [r'in'],
+            'triggers': [r'in',r'trending in'],
             'arguments':{
                 'name': ['{{trigger}}(?P<name>( .*)?)']
             },
@@ -143,7 +143,7 @@ tweet = {
         #     3:'Example: tweets by "@somename"'
         #     }
     }
-}
+} #8
 
 # Core game code for tetris from https://github.com/jakesgordon/javascript-tetris
 tetris = {
@@ -157,7 +157,7 @@ tetris = {
             'confirm': False,
         }
     }
-}
+} # 6+1(tetris)
 
 #Soundcloud Docs can be found at https://developers.soundcloud.com/
 soundcloud = {
@@ -195,10 +195,10 @@ soundcloud = {
             'confirm': False,
         },
         '--quit': {
-            'triggers': [r'quit'],
+            'triggers': [r'quit','quiz', 'quick'],
             'arguments': {
             },
             'confirm': False,
         },
-    }
+    } #2
 }

@@ -4,7 +4,8 @@ import re
 
 DEVICES = {}
 
-def execution_handler(result, device, output): # had to use because of some conflict, maybe resolved later
+# Used to call the respective device function in execute.py
+def execution_handler(result, device, output):
     execution_result = execute.process(result, device, output)
     return execution_result
 
@@ -46,9 +47,11 @@ def parse_args(sentence, intent):
         for regex in arguments[argument_name]:
             regex = replace_macro(regex, intent)
             regex = re.compile(regex)
+            print(1, regex, sentence, re.search(regex, sentence))
             value = re.search(regex, sentence)
             if value:
                 values[argument_name] = value.group(argument_name)
+    print(values)
     return values
 
 def parse(sentence, newCommand, oldResult, output):
