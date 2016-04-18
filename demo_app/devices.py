@@ -4,10 +4,10 @@ sys.path.insert(0, '../')
 ######
 
 totem = {
-    'alias': ['totem', 'video player', 'media player'],
+    'alias': ['totem', 'video player', 'media player', 'total'],
     'operations': {
         '--play': {
-            'triggers': [r'play music', r'play video', r'play playlist', r'play songs?', r'play'],
+            'triggers': [r'play music', r'play video', r'play playlist', r'play songs?', r'play '],
             'arguments':{
                 'name': ['{{trigger}}(?P<name>( .*)?)'],
             },
@@ -68,7 +68,7 @@ totem = {
             'confirm': False
         },
         '--quit': {
-            'triggers': [r'quit'],
+            'triggers': [r'quit', r'quick'],
             'arguments': {
             },
             'confirm': True,
@@ -153,7 +153,7 @@ tetris = {
 
 #Soundcloud Docs can be found at https://developers.soundcloud.com/
 soundcloud = {
-    'alias': [r'soundcloud'],
+    'alias': [r'soundcloud', r'sound cloud'],
     'operations': {
         '--pause': {
             'triggers': [r'pause'],
@@ -180,7 +180,7 @@ soundcloud = {
             'confirm': False
         },
         '--list': {
-            'triggers': [r'list'],
+            'triggers': [r'list', r'search'],
             'arguments': {
                 'name': ['{{trigger}}(?P<name>( .*)?)'],
             },
@@ -208,7 +208,83 @@ soundcloud = {
             },
             'confirm':False
         },        
-    } #2
+    }
+}
+
+weather = {
+    'alias' : ['forecast'],
+    'operations' : {
+        'minTemperature':{
+            'triggers':[r'min[a-z]* temperature'],
+            'arguments':{
+                # 'name': ['{{trigger}}(?P<name>( .*)?)']
+            },
+            'confirm':False,
+        },
+        'maxTemperature':{
+            'triggers':[r'max[a-z]* temperature'],
+            'arguments':{
+                # 'name': ['{{trigger}}(?P<name>( .*)?)']
+            },
+            'confirm':False,
+        },
+        'need':{
+            'triggers':[r'need an umbrella'],
+            'arguments':{
+                # 'name': ['{{trigger}}(?P<name>( .*)?)']
+            },
+             'confirm':False,
+        },
+        'will':{
+            'triggers':[r'(rain|cloudy|sunny)'],
+            'arguments':{
+                # 'name': ['{{trigger}}(?P<name>( .*)?)']
+            },
+            'confirm':False,
+        },
+        'windspeed':{
+            'triggers':[r'wind speed'],
+            'arguments':{
+                # 'name': ['{{trigger}}(?P<name>( .*)?)']
+            },
+            'confirm':False,
+        },
+        'humidity':{
+            'triggers':[r'humidity'],
+            'arguments':{
+                # 'name': ['{{trigger}}(?P<name>( .*)?)']
+            },
+            'confirm':False,
+        },
+        'weather':{
+            'triggers':[r'weather'],
+            'arguments':{
+                # 'name': ['{{trigger}}(?P<name>( .*)?)']
+            },
+            'confirm':False,
+        },
+        # 'set city':{
+        #     'triggers':[r'set city'],
+        #     'arguments':{
+        #         'name': ['{{trigger}}(?P<name>( .*)?)']
+        #     },
+        #     'confirm':False
+        # },
+        'reset':{
+            'triggers':[r'reset city'],
+            'arguments':{
+
+            },
+            'confirm':False
+        },
+        'set city':{
+            'triggers':[r'set city'],
+            'arguments':{
+                'name': ['{{trigger}}(?P<name>( .*)?)']
+            },
+            'confirm':False
+        }
+    }
 }
 
 
@@ -239,22 +315,23 @@ file_explorer = {
         '--display': {
             'triggers': [r'display contents',r'show contents',r'list contents'],
             'arguments': {
-                'name': ['{{trigger}}(?P<name>( .*)?)'],
             },
-            'confirm': False,
+            'confirm': True,
+            'message': 'Do you want to step-into a sub directory (yes/no) ?'
         },
+        '--hidden': {
+            'triggers': [r'display hidden contents',r'show hidden contents',r'list hidden contents'],
+            'arguments': {
+            },
+            'confirm': True,
+            'message': 'Do you want to step-into a sub directory (yes/no) ?'
+        },        
         '--current-path': {
             'triggers': [r'current path',r'current path'],
             'arguments': {
             },
             'confirm': False,
-        },
-        '--set-path': {
-            'triggers': [r'set path to',r'set path'],
-            'arguments': {
-            },
-            'confirm': False,
-        },        
+        },       
         'examples_intent':{
             'triggers':[r'none'],
             'arguments':{

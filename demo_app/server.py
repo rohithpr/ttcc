@@ -12,26 +12,42 @@ import json
 app = Flask(__name__)
 
 def setup():
+    '''
+    Register devices with the core parser
+    '''
     core.register('totem', devices.totem)
     core.register('tweet', devices.tweet)
     core.register('tetris', devices.tetris)
     core.register('soundcloud',devices.soundcloud)
     core.register('file_explorer',devices.file_explorer)
+    core.register('weather', devices.weather)
 
 @app.route('/')
 def home():
+    '''
+    The homepage
+    '''
     return render_template('home.html')
 
 @app.route('/tetris')
 def tetris():
+    '''
+    Tetris window
+    '''
     return render_template('tetris.html')
 
 def execution_handler(result, device, output):
+    '''
+    Calls the execution module
+    '''
     execution_result = execute.process(result, device, output)
     return execution_result
 
 @app.route('/command', methods=['POST'])
 def command():
+    '''
+    Recevies commands from the client, parses it and takes appropriate action.
+    '''
 
     # This object will be sent to the client
     output = {
@@ -44,15 +60,14 @@ def command():
                       # Can be one of confirm, option, intent, argument,
     }
 
-    command = request.form['input']
-    oldResult = json.loads(request.form['oldResult'])
-    newCommand = request.form['newCommand']
+    command = request.form['input'] # The input command
+    newCommand = request.form['newCommand'] # Flag indicating whether the command is new or a continuation
+    oldResult = json.loads(request.form['oldResult']) # Any old results if the command is a continuation
 
     output['commands'].append(command)
 
     try:
         result, device, output = core.parse(command, newCommand, oldResult, output)
-
         output['parsed'] = result
         if output['parsed']['intent'] == None: # no intent given, so ask user to give one
             output['final'] = False
@@ -60,9 +75,9 @@ def command():
             output['example'] = device['operations']['examples_intent']['arguments']['example'] # provide the required message and
             output['message'] = device['operations']['examples_intent']['arguments']['message'] # example in devices.py
             return jsonify(output)
-
+        
         if device['operations'][result['intent']]['confirm'] == True:
-            if 'dummy' in output.keys(): # this is for checking yes or no
+            if 'cancel' in output.keys():
                 return jsonify(output)
 
             output['final'] = False

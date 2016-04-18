@@ -1,7 +1,14 @@
+from pprint import pprint
 from TwitterAPI import TwitterAPI
+import datetime
 import os
 import re
 import config
+import requests
+import time
+
+path = ''
+city = 'bangalore' # the default city to check on weather in bangalore
 
 consumer_key = config.twitter['consumer_key']
 consumer_secret = config.twitter['consumer_secret']
@@ -164,8 +171,126 @@ def tweet(command, device, output):
         }    
         return output
 
+
+
+# example: forecast set city 'cityname'
+# 2. forecast will it rain tomorrow
+# 3. forecast what will be the weather tomorrow
+# 4. forecast do i need an umbrella tomorrow
+# 5. forecast reset city ... by default it's bangalore
+# etc...
+# the output displayed should be made proper
+def weather(command, device, output):
+    weather_report, info=[], []
+    global city
+    try:
+        if command['intent'] == 'set city':
+            city = command['arguments']['name']
+            city = city[1:len(city)] # to remove the space, which is the first character
+            output['final'] = False
+            output['message'] = 'now ask what you want'
+            return output
+
+        if command['intent'] == 'reset':
+            city ='bangalore'
+            output['final'] = False
+            output['message'] = 'now ask what you want'
+            return output
+        
+        input_array = output['input'].split()
+        if 'today' in input_array:
+            day = 0 # day == 0 represents today 
+        elif 'tomorrow' in input_array:
+            day = 1
+        elif 'yesterday' in input_array: # when input is on yesterday's weather, should be handled later
+            day =0 
+        elif 'week' in input_array:
+            day = 6
+        else:
+            day = 0
+
+        # below line is used to get weather report history
+        # res = requests.get('http://api.openweathermap.org/data/2.5/history/city?q=Bangalore,IN&type=hour')
+        
+        response = requests.get('http://api.openweathermap.org/data/2.5/forecast/daily?q='+city+'&cnt={1}')
+        result = response.json()
+        # pprint(result)
+        epoc_time = result['list'][day]['dt'] # time is in epoch format
+        date_time = time.gmtime(epoc_time) # convert UNIX time representation to date time
+        info.append(result['city']['name'])
+        info.append('Date : '+str(' '.join(str(e) for e in date_time[0:3]))) # getting only year, month, and day
+        
+        if command['intent'] == 'minTemperature':
+            weather_report.append('Minimum Temperature is '+str(result['list'][day]['temp']['min']))
+        
+        elif command['intent'] == 'maxTemperature':
+            weather_report.append('Maximum Temperature is '+str(result['list'][day]['temp']['max']))
+            
+        elif command['intent'] == 'will': # ex: will it rain tomorrow
+            if 'rain' in input_array:
+                if 'rain' in result['list'][day].keys():
+                    weather_report.append('Yes it rains today') 
+                    weather_report.append('Rain upto '+str(result['list'][day]['rain']) + ' millimetres is expected')
+                else:
+                    weather_report.append('no rain')
+            elif 'cloudy' in input_array:
+                if result['list'][day]['weather'][0]['description'] == 'few clouds': # need to check on 'main' in returned json
+                    weather_report.append('yes its cloudy')
+                else:
+                    weather_report.append('not cloudy')
+            else:
+                pass # ex: will it be sunny tomorrow "to be handled becacause of some calculations to compute"
+
+        elif command['intent'] == 'humidity':
+            weather_report.append(result['list'][day]['humidity'])
+            
+        elif command['intent'] == 'windspeed':
+            weather_report.append(result['list'][day]['speed'])
+            
+        elif command['intent'] == 'need': # ex: do i need an umbrella, 
+            if 'rain' in result['list'][day].keys(): # need one when it is raining
+                weather_report.append('Yes, you need an umbrella')
+                weather_report.append('Rain upto '+str(result['list'][day]['rain']) + ' millimetres is expected')
+            elif round(result['list'][day]['temp']['max'] -273, 2) > 30.00: # need one when its hot
+                weather_report.append('Yes you need an umbrella')
+                weather_report.append('Maximum Temperature is about '+str(round(result['list'][day]['temp']['max'] -273, 2)) + ' celcius')
+            else:weather_report.append('No')
+
+        elif command['intent'] == 'weather':
+            weather_report.append('Humidity : '+str(result['list'][day]['humidity']))
+            weather_report.append('Wind Speed : '+str(result['list'][day]['speed']))
+            weather_report.append('Minimum Temperature : '+str(round(result['list'][day]['temp']['min'] - 273, 2))+ ' celcius')
+            weather_report.append('Maximum Temperature : '+str(round(result['list'][day]['temp']['max'] -273, 2)) + ' celcius')
+            weather_report.append('Day Temperature : '+str(round(result['list'][day]['temp']['day'] - 273, 2)) + ' celcius')
+            weather_report.append('Evening Temperature : '+str(round(result['list'][day]['temp']['eve'] - 273, 2)) + ' celcius')
+            weather_report.append('Morning Temperature : '+str(round(result['list'][day]['temp']['morn'] - 273, 2)) + ' celcius')
+            if 'rain' in result['list'][day].keys():
+                weather_report.append('Rain upto '+str(result['list'][day]['rain']) + ' millimetres is expected')
+
+        # s = datetime.datetime(2016,4,15,0,0).timestamp()
+        # e = datetime.datetime(2016,4,16,0,0).timestamp()
+
+        output = {
+                 'commands': [],
+                 'error': False,
+                 'final': True,
+                 'parsed': command,
+                 'message': 'Executed command',
+                 'type': None,
+                 'info': info,
+                 'weather': weather_report
+            }
+        return output
+    except:
+        output = {    
+           'message':'invalid input', 
+           'error':True,
+           'final':True
+        }    
+        return output
+
 def file_explorer(command, device, output):
-    path = ''
+    global path
     if command['intent'] == '--current-path':
         output = {
             'commands': [],
@@ -180,13 +305,15 @@ def file_explorer(command, device, output):
 
     elif command['intent'] == '--goto':
         home_folders = ['desktop','documents','music','pictures','videos','public','templates']
+        if command['arguments']['name']:
+            command['arguments']['name'] = command['arguments']['name'].strip(' ')
         if command['arguments']['name'] == 'home':
             path = os.path.expanduser('~/')
+
         elif command['arguments']['name'] in home_folders:
             temp_path = '~/' + command['arguments']['name'].title() # /home/username/music becomes /home/username/Music
             path = os.path.expanduser(temp_path)
 
-        print("Path has been set to :",path)
         output = {
             'commands': [],
             'error': False,
@@ -197,6 +324,63 @@ def file_explorer(command, device, output):
             'path': path
         }    
         return output
+
+    elif command['intent'] == '--display':
+        directories = []
+        files = []
+        for dir_name, subdir_list, file_list in os.walk(path):
+            files = [f for f in file_list if not f[0] == '.'] # The f and d are just temporary variables in order to check if it is a hidden file/directory or not
+            directories[:] = [d for d in subdir_list if not d[0] == '.'] # The dirs[:] = slice assignment; we are replacing the elements in dirs (and not the list referred to by dirs) so that os.walk() will not process deleted directories.
+            break
+        output = {
+            'commands': [],
+            'error': False,
+            'final': True,
+            'parsed': command,
+            'message': ' Directories and Files ',
+            'type': 'option',
+            'path': path,
+            'option_dir': directories,
+            'option_files': files
+        }
+        return output
+
+    elif command['intent'] == '--hidden':
+        directories = []
+        files = []
+        for dir_name, subdir_list, file_list in os.walk(path):
+            files = [f for f in file_list if f[0] == '.'] # The f and d are just temporary variables in order to check if it is a hidden file/directory or not
+            directories[:] = [d for d in subdir_list if d[0] == '.'] # The dirs[:] = slice assignment; we are replacing the elements in dirs (and not the list referred to by dirs) so that os.walk() will not process deleted directories.
+            break
+        output = {
+            'commands': [],
+            'error': False,
+            'final': True,
+            'parsed': command,
+            'message': ' Hidden directories and Files ',
+            'type': 'option',
+            'path': path,
+            'option_dir': directories,
+            'option_files': files
+        }
+        return output
+
+    elif command['intent'] == '--move-up':
+        path = os.path.dirname(path) # Return the directory name of pathname path  https://docs.python.org/3/library/os.path.html#os.path.dirname
+
+        output = {
+            'commands': [],
+            'error': False,
+            'final': True,
+            'parsed': command,
+            'message': 'Executed command',
+            'type': None,
+            'path': path
+        }
+        return output
+
+    elif command['intent'] == '--step-into':
+        pass
 
 def tetris(command, device, output):
     return output
@@ -213,5 +397,7 @@ def process(command, device, output):
         return soundcloud(command, device, output)
     if command['device'] == 'file_explorer':
         return file_explorer(command, device, output)
+    if command['device'] == 'weather':
+        return weather(command, device, output)
     elif command['device'] == 'tetris':
         return tetris(command, device, output)

@@ -31,7 +31,6 @@ def parse_intent(sentence, operations):
     for operation_name in operations.keys():
         operation = operations[operation_name]
         for trigger in operation['triggers']:
-
             if re.search(trigger, sentence):
                 return {
                     'operation_name': operation_name,
@@ -56,7 +55,7 @@ def parse_args(sentence, intent):
 def parse(sentence, newCommand, oldResult, output):
     if newCommand == 'false' and oldResult['type'] == 'option': # When the given command has many options to deal with
         device = DEVICES[oldResult['parsed']['device']]
-        print(oldResult['option-type'])
+        # print(oldResult['option-type'])
         if oldResult['option-type'] == 'arguments':
             try:
                 print(oldResult['option-type'])
@@ -67,21 +66,22 @@ def parse(sentence, newCommand, oldResult, output):
                 if oldResult['parsed']['device'] == 'soundcloud':
                     oldResult['parsed']['intent'] = '--list' # because in main.js the intent is set to --play
                 return oldResult['parsed'], device, output
-   
-    if newCommand == 'false' and oldResult['type'] == 'confirm': # to deal with yes/no
+
+    # If the command is a confirmation for the previous command
+    if newCommand == 'false' and oldResult['type'] == 'confirm':
         device = DEVICES[oldResult['parsed']['device']]
-        if sentence.lower() in ['yes', 'yeah', 'yup', 'yep', 'ya', 'y'] :
+        if sentence.lower() in ['yes', 'yeah', 'yup', 'yep', 'ya', 'y']:
             output = execution_handler(oldResult['parsed'], device, output)
             output['final'] = True
             output['parsed'] = oldResult['parsed']
             output['message'] = 'Executed command'
-            output['dummy'] = '' # this dummy variable is to check whether the input is neither yes/no
+            device['operations'][oldResult['parsed']['intent']]['confirm'] = False
             return oldResult['parsed'], device, output
 
-        if sentence.lower() in ['nope', 'no','n']:
+        if sentence.lower() in ['nope', 'no', 'n']:
             output['final'] = True
-            output['message'] = 'Execution Terminated'
-            output['dummy'] = '' # this dummy variable is to check whether the input is neither yes/no
+            output['message'] = 'Operation cancelled'
+            output['cancel'] = '' # The operations wasn't confirmed
             return oldResult['parsed'], device, output
 
         return oldResult['parsed'], device, output
@@ -107,6 +107,8 @@ def parse(sentence, newCommand, oldResult, output):
                 argument_values['name'] = ''
                 return get_arguments(target_device, intent, argument_values, output)
         
+        if target_device == 'weather': # this is further processing of sentence  in execute.py
+            output['input'] = sentence
         response = {
             'device': target_device,
             'intent': intent['operation_name'],
