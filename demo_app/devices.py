@@ -3,9 +3,6 @@ import sys
 sys.path.insert(0, '../')
 ######
 
-# from ttcc import test
-# temperature = test.Temperature()
-
 totem = {
     'alias': ['totem', 'video player', 'media player'],
     'operations': {
@@ -80,8 +77,8 @@ totem = {
         'examples_intent':{
             'triggers':[r'none'],
             'arguments':{
-                'example':['the possible intents are play, pause', 'Example: play "some file"'],
-                'message':'no intent provided'
+                'example':['The possible intents are play, pause', 'Example: play "some file"'],
+                'message':'No intent provided'
             },
             'confirm':False
         },
@@ -89,7 +86,7 @@ totem = {
             'triggers':[r'none'],
             'arguments':{
                 'example':['Example: play filename'],
-                'message':'no arguments provided'
+                'message':'No arguments provided'
             },
             'confirm':False
         },
@@ -137,11 +134,6 @@ tweet = {
             },
             'confirm':False
         }
-        # 'example_intent':{
-        #     1:'there is no intent, provide one',[r'^get [a-z ]*tweets$',r'^get [a-z ]*tweet$',r'^fetch [a-z ]*tweet$', r'^fetch [a-z ]*tweets$',r'^tweets$'],
-        #     2:'the possible intents are \'on\', \'by\'',
-        #     3:'Example: tweets by "@somename"'
-        #     }
     }
 } #8
 
@@ -200,5 +192,84 @@ soundcloud = {
             },
             'confirm': False,
         },
+        'examples_intent':{
+            'triggers':[r'none'],
+            'arguments':{
+                'example':['The possible intents are play, pause, list', 'Example: soundcloud list "name"'],
+                'message':'No intent provided'
+            },
+            'confirm':False
+        },
+        'examples_arguments':{
+            'triggers':[r'none'],
+            'arguments':{
+                'example':['Example: soundcloud list filename'],
+                'message':'No arguments provided'
+            },
+            'confirm':False
+        },        
     } #2
+}
+
+
+#Explore and traverse the various directories in a UNIX system
+file_explorer = {
+    'alias': ['file explorer'],
+    'operations': {
+        '--goto': {
+            'triggers': [r'go to'],
+            'arguments': {
+                'name': ['{{trigger}}(?P<name>( .*)?)'],
+            },
+            'confirm': False,
+        },
+        '--step-into': {
+            'triggers': [r'step into'],
+            'arguments': {
+                'name': ['{{trigger}}(?P<name>( .*)?)'],
+            },
+            'confirm': False,
+        },
+        '--move-up': {
+            'triggers': [r'move up'],
+            'arguments': {
+            },
+            'confirm': False,
+        },
+        '--display': {
+            'triggers': [r'display contents',r'show contents',r'list contents'],
+            'arguments': {
+                'name': ['{{trigger}}(?P<name>( .*)?)'],
+            },
+            'confirm': False,
+        },
+        '--current-path': {
+            'triggers': [r'current path',r'current path'],
+            'arguments': {
+            },
+            'confirm': False,
+        },
+        '--set-path': {
+            'triggers': [r'set path to',r'set path'],
+            'arguments': {
+            },
+            'confirm': False,
+        },        
+        'examples_intent':{
+            'triggers':[r'none'],
+            'arguments':{
+                'example':['The possible intents are display, goto, current path ', 'Example: display contents'],
+                'message':'No intent provided'
+            },
+            'confirm':False
+        },
+        'examples_arguments':{
+            'triggers':[r'none'],
+            'arguments':{
+                'example':['Example: goto home'],
+                'message':'No arguments provided'
+            },
+            'confirm':False
+        },        
+    }
 }

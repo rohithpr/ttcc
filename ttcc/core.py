@@ -9,6 +9,7 @@ def execution_handler(result, device, output):
     execution_result = execute.process(result, device, output)
     return execution_result
 
+#Used to register devices with their details
 def register(device_name, device_details):
     global DEVICES
     DEVICES[device_name] = device_details
@@ -26,7 +27,7 @@ def parse_device(sentence):
     return possible_targets
 
 def parse_intent(sentence, operations):
-    # Limited to one operation only. We can add conflict handling later if required
+    # Limited to one operation.
     for operation_name in operations.keys():
         operation = operations[operation_name]
         for trigger in operation['triggers']:
@@ -47,15 +48,13 @@ def parse_args(sentence, intent):
         for regex in arguments[argument_name]:
             regex = replace_macro(regex, intent)
             regex = re.compile(regex)
-            print(1, regex, sentence, re.search(regex, sentence))
             value = re.search(regex, sentence)
             if value:
                 values[argument_name] = value.group(argument_name)
-    print(values)
     return values
 
 def parse(sentence, newCommand, oldResult, output):
-    if newCommand == 'false' and oldResult['type'] == 'option': # when the given command has many options to deal with
+    if newCommand == 'false' and oldResult['type'] == 'option': # When the given command has many options to deal with
         device = DEVICES[oldResult['parsed']['device']]
         print(oldResult['option-type'])
         if oldResult['option-type'] == 'arguments':
@@ -76,13 +75,13 @@ def parse(sentence, newCommand, oldResult, output):
             output['final'] = True
             output['parsed'] = oldResult['parsed']
             output['message'] = 'Executed command'
-            output['dummy']='' # this dummy variable is to check whether the input is neither yes/no
+            output['dummy'] = '' # this dummy variable is to check whether the input is neither yes/no
             return oldResult['parsed'], device, output
 
         if sentence.lower() in ['nope', 'no','n']:
             output['final'] = True
             output['message'] = 'Execution Terminated'
-            output['dummy']='' # this dummy variable is to check whether the input is neither yes/no
+            output['dummy'] = '' # this dummy variable is to check whether the input is neither yes/no
             return oldResult['parsed'], device, output
 
         return oldResult['parsed'], device, output

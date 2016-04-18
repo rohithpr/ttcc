@@ -43,15 +43,6 @@ $(document).ready(function() {
   /* Utils and front end controllers
    */
 
-  var speech_synthesis = function(message) {
-    setTimeout(function(){
-      var u = new SpeechSynthesisUtterance()
-      u.text = message
-      u.lang = 'en-IN'
-      speechSynthesis.speak(u)
-    }, 1000)
-  }
-
   var tetrisHandler = function(inputContent) {
     var messageTetris = function(message) {
       var tetris = $('.tetris')[0]
@@ -170,7 +161,7 @@ $(document).ready(function() {
       SC.get('/tracks', {
           q: result.parsed.arguments.name,
           license: 'cc-by-sa',
-          limit: 10
+          limit: 20
       })
       .then(function(tracks) { // Tracks contains a list of songs retrieved from SCloud
         result.parsed.intent = '--play-song' //Mimic a request to server for continuation of selection of song from a list
@@ -236,18 +227,21 @@ $(document).ready(function() {
   }
 
   /* Speech and server controllers
+      Documentation can be found at https://developers.google.com/web/updates/2013/01/Voice-Driven-Web-Apps-Introduction-to-the-Web-Speech-API?hl=en
    */
   if (typeof webkitSpeechRecognition === 'function') {
     var streamer = new webkitSpeechRecognition()
   }
 
+
+  // Function to convert voice stream to text stream 
   var setupStreamer = function () {
     if (typeof webkitSpeechRecognition !== 'function') {
        return
     }
     streamer.lang = 'en-IN'
-    streamer.continuous = true
-    streamer.interimResults = false
+    streamer.continuous = true // Recognition will continue even if the user pauses while speaking.
+    streamer.interimResults = false // Results returned by the recognizer are final
 
     streamer.onresult = function(event) {
       var inputContent = ''
@@ -272,7 +266,6 @@ $(document).ready(function() {
         return
       }
 
-
       var isStopSession = inputContent.search('stop session')
       if (isStopSession !== -1) {
         sessionDuration = 0
@@ -293,7 +286,6 @@ $(document).ready(function() {
       }
      }
 
-
       streamer.onend = function(event) {
         streamer.start()
      }
@@ -313,7 +305,7 @@ $(document).ready(function() {
 
    // Handles voice input
   $('#main-speech').click(function() {
-    $('input[name=command_text]').val("soundcloud list in the end")
+    $('input[name=command_text]').val("file explorer go to music")
     $('#main-submit').click()
   })
 
@@ -400,23 +392,19 @@ $(document).ready(function() {
               soundCloudHandler(result)
               sessionDuration = SESSION_DURATION
             }
+
+            //If file_explorer
+            if (result.parsed && result.parsed.device === 'file_explorer') {
+              if (result.parsed.intent === '--current-path' || result.parsed.intent === '--goto') {
+                var path = result.path
+                var panel = utils.generateDiv()
+                var message = $('<pre>').html('Path has been set to:')
+                              .append($('<pre>').html(path))
+                panel.find('.box').append(message)
+                $('.holder').prepend(panel)                
+              }
+            }
           }
-          // // the below code is only for twitter delete after the interaction is made proper
-          // if (result.final === 'twitter_False') {
-          //   var parsed = JSON.stringify(result.parsed, null, 2)
-          //   oldResult = {}
-          //   newCommand = true
-          //   $('#result').html(parsed).show().parent().show()
-          //   $('#message').html(result.message)
-          //   if (result.options !== undefined) {
-          //     var options = $('<ol>')
-          //     result.options.forEach(function(option) {
-          //       options.append($('<li>').html(option))
-          //     })
-          //     $('#options').html(options)
-          //     $('#tweet').hide()
-          //   }
-          // }
 
           else if (result.final === false) { // Needs confirmation or more information
             var parsed = JSON.stringify(result.parsed, null, 2)

@@ -16,6 +16,7 @@ def setup():
     core.register('tweet', devices.tweet)
     core.register('tetris', devices.tetris)
     core.register('soundcloud',devices.soundcloud)
+    core.register('file_explorer',devices.file_explorer)
 
 @app.route('/')
 def home():
@@ -46,42 +47,11 @@ def command():
     command = request.form['input']
     oldResult = json.loads(request.form['oldResult'])
     newCommand = request.form['newCommand']
-    # print(newCommand)
-    # print(output['final'])
 
     output['commands'].append(command)
-    # if newCommand == 'false' and oldResult['type'] == 'confirm': # Handle interactive mode; doing only yes/no for now
-    #     device = core.DEVICES[oldResult['parsed']['device']]
-    #     if command.lower() in ['yes', 'yeah', 'yup', 'yep', 'ya', 'y']:
-    #         output = execution_handler(oldResult['parsed'], device, output) # Need to send device details instead of None
-
-    #         # This should be done in execution_handler
-    #         # These values may not always be the same
-    #         # More info may be needed sometimes
-    #         output['final'] = True
-    #         output['parsed'] = oldResult['parsed']
-    #         output['message'] = 'Executed command'
-    #     elif command.lower() in ['nope', 'no', 'n']:
-    #         output['final'] = True
-    #         output['message'] = 'Execution terminated. Ready to receive a new command'
-    #     else:
-    #         return jsonify(oldResult)
-    #     return jsonify(output)
-
-    # if newCommand == 'false' and oldResult['type'] == 'option':
-    #     device = core.DEVICES[oldResult['parsed']['device']]
-    #     print(device)
-    #     if oldResult['option-type'] == 'arguments':
-    #         try:
-    #             optionSelected = utils.text2int(command) - 1
-    #             oldResult['parsed']['arguments'][oldResult['option-name']] = oldResult['options'][optionSelected]
-    #             output = execution_handler(oldResult['parsed'], device, oldResult)
-    #             return jsonify(output)
-    #         except:
-    #             return jsonify(oldResult)
 
     try:
-        result, device,output = core.parse(command, newCommand, oldResult, output)
+        result, device, output = core.parse(command, newCommand, oldResult, output)
 
         output['parsed'] = result
         if output['parsed']['intent'] == None: # no intent given, so ask user to give one
@@ -91,16 +61,6 @@ def command():
             output['message'] = device['operations']['examples_intent']['arguments']['message'] # example in devices.py
             return jsonify(output)
 
-        # if 'name' in output['parsed']['arguments'].keys(): # some command has no arguments,ex: 'totem pause', see devices.py
-        #     print(2, output)
-        #     if output['parsed']['arguments']['name'] == '': # no arguments given, so ask user to give one
-        #         output['final'] = False
-        #         output['type'] = 'continue'
-        #         output['example'] = device['operations']['examples_arguments']['arguments']['example'] # provide the required message
-        #         output['message'] = device['operations']['examples_arguments']['arguments']['message'] # and example in devices.py
-        #         return jsonify(output)
-
-        # print(device['operations'][result['intent']])
         if device['operations'][result['intent']]['confirm'] == True:
             if 'dummy' in output.keys(): # this is for checking yes or no
                 return jsonify(output)
