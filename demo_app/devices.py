@@ -300,14 +300,14 @@ file_explorer = {
             'confirm': False,
         },
         '--step-into': {
-            'triggers': [r'step into'],
+            'triggers': [r'step into',r'move into',r'move to'],
             'arguments': {
                 'name': ['{{trigger}}(?P<name>( .*)?)'],
             },
             'confirm': False,
         },
         '--move-up': {
-            'triggers': [r'move up'],
+            'triggers': [r'move up',r'level up'],
             'arguments': {
             },
             'confirm': False,
@@ -316,22 +316,50 @@ file_explorer = {
             'triggers': [r'display contents',r'show contents',r'list contents'],
             'arguments': {
             },
-            'confirm': True,
-            'message': 'Do you want to step-into a sub directory (yes/no) ?'
+            'confirm': False,
+        },
+        '--display-files': {
+            'triggers': [r'display files',r'show files',r'list files'],
+            'arguments': {
+            },
+            'confirm': False,
+        },
+        '--display-dir': {
+            'triggers': [r'display directories',r'show directories',r'list directories',r'display folders',r'show folders',r'list folders'],
+            'arguments': {
+            },
+            'confirm': False,
         },
         '--hidden': {
             'triggers': [r'display hidden contents',r'show hidden contents',r'list hidden contents'],
             'arguments': {
             },
-            'confirm': True,
-            'message': 'Do you want to step-into a sub directory (yes/no) ?'
-        },        
+            'confirm': False,
+        },
+        '--hidden-files': {
+            'triggers': [r'display hidden files',r'show hidden files',r'list hidden files'],
+            'arguments': {
+            },
+            'confirm': False,
+        },
+        '--hidden-dir': {
+            'triggers': [r'display hidden directories',r'show hidden directories',r'list hidden directories',r'display hidden folders',r'show hidden folders',r'list hidden folders'],
+            'arguments': {
+            },
+            'confirm': False,
+        },
         '--current-path': {
             'triggers': [r'current path',r'current path'],
             'arguments': {
             },
             'confirm': False,
-        },       
+        },
+        '--reset-path': {
+            'triggers': [r'reset path',r'clear path'],
+            'arguments': {
+            },
+            'confirm': False,
+        },
         'examples_intent':{
             'triggers':[r'none'],
             'arguments':{
@@ -347,6 +375,6 @@ file_explorer = {
                 'message':'No arguments provided'
             },
             'confirm':False
-        },        
+        },
     }
 }

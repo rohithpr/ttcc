@@ -1,5 +1,6 @@
 var fileExplorerHandler = function(result) {
   if (result.parsed.intent === '--current-path' || result.parsed.intent === '--goto' || result.parsed.intent === '--move-up' || result.parsed.intent === '--step-into' ) {
+    console.log(result)
     var path = result.path
     var panel = utils.generateDiv()
     var message = $('<pre>').html('Path has been set to:')
@@ -15,7 +16,7 @@ var fileExplorerHandler = function(result) {
                   .append($('<pre>').html(path))
 
     var directories = $('<pre>').html('Directories:')
-                      .append($('<ol>'))
+                      .append($('<ul>'))
     result.option_dir.forEach(function(option_dir) { 
       directories.append($('<li>').html(option_dir))
     })
