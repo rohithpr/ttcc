@@ -111,7 +111,7 @@ tweet = {
             'confirm': False
          },
          'trends/place':{
-            'triggers': [r'in',r'trending in'],
+            'triggers': [r'in', r'trending in'],
             'arguments':{
                 'name': ['{{trigger}}(?P<name>( .*)?)']
             },
@@ -300,62 +300,62 @@ file_explorer = {
             'confirm': False,
         },
         '--step-into': {
-            'triggers': [r'step into',r'move into',r'move to'],
+            'triggers': [r'step into', r'move into', r'move to'],
             'arguments': {
                 'name': ['{{trigger}}(?P<name>( .*)?)'],
             },
             'confirm': False,
         },
         '--move-up': {
-            'triggers': [r'move up',r'level up'],
+            'triggers': [r'move up', r'level up'],
             'arguments': {
             },
             'confirm': False,
         },
         '--display': {
-            'triggers': [r'display contents',r'show contents',r'list contents'],
+            'triggers': [r'display', r'display contents', r'show contents', r'list contents'],
             'arguments': {
             },
             'confirm': False,
         },
         '--display-files': {
-            'triggers': [r'display files',r'show files',r'list files'],
+            'triggers': [r'display files', r'show files', r'list files'],
             'arguments': {
             },
             'confirm': False,
         },
         '--display-dir': {
-            'triggers': [r'display directories',r'show directories',r'list directories',r'display folders',r'show folders',r'list folders'],
+            'triggers': [r'display directories', r'show directories', r'list directories', r'display folders', r'show folders', r'list folders'],
             'arguments': {
             },
             'confirm': False,
         },
         '--hidden': {
-            'triggers': [r'display hidden contents',r'show hidden contents',r'list hidden contents'],
+            'triggers': [r'display hidden', r'display hidden contents', r'show hidden contents', r'list hidden contents'],
             'arguments': {
             },
             'confirm': False,
         },
         '--hidden-files': {
-            'triggers': [r'display hidden files',r'show hidden files',r'list hidden files'],
+            'triggers': [r'display hidden files', r'show hidden files', r'list hidden files'],
             'arguments': {
             },
             'confirm': False,
         },
         '--hidden-dir': {
-            'triggers': [r'display hidden directories',r'show hidden directories',r'list hidden directories',r'display hidden folders',r'show hidden folders',r'list hidden folders'],
+            'triggers': [r'display hidden directories', r'show hidden directories', r'list hidden directories', r'display hidden folders', r'show hidden folders', r'list hidden folders'],
             'arguments': {
             },
             'confirm': False,
         },
         '--current-path': {
-            'triggers': [r'current path',r'current path'],
+            'triggers': [r'current path'],
             'arguments': {
             },
             'confirm': False,
         },
         '--reset-path': {
-            'triggers': [r'reset path',r'clear path'],
+            'triggers': [r'reset path', r'clear path', r'reset'],
             'arguments': {
             },
             'confirm': False,
@@ -363,7 +363,7 @@ file_explorer = {
         'examples_intent':{
             'triggers':[r'none'],
             'arguments':{
-                'example':['The possible intents are display, goto, current path ', 'Example: display contents'],
+                'example':['The possible intents are display, goto, current path ', 'Example: file explorer display contents'],
                 'message':'No intent provided'
             },
             'confirm':False

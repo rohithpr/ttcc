@@ -20,11 +20,11 @@ $(document).ready(function() {
     setupRecognizer() // Setup the speech recognizer
   })()
 
-  // // Handles voice input
-  $('#main-speech').click(function() {
-    $('input[name=command_text]').val("file explorer go to music")
-    $('#main-submit').click()
-  })
+  // // // Handles voice input
+  // $('#main-speech').click(function() {
+  //   $('input[name=command_text]').val("file explorer move up")
+  //   $('#main-submit').click()
+  // })
 
   // Submits form using AJAX
   $('#main-submit').click(function(e) {

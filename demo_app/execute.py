@@ -292,6 +292,7 @@ def weather(command, device, output):
 
 def file_explorer(command, device, output):
     global path
+
     if command['intent'] == '--current-path':
         output = {
             'commands': [],
@@ -310,10 +311,11 @@ def file_explorer(command, device, output):
             command['arguments']['name'] = command['arguments']['name'].strip(' ')
         if command['arguments']['name'] == 'home':
             path = os.path.expanduser('~/')
+            path = path[:-1] # This has been done because when 'move up' is said it removes the directory before the last slash.
 
         elif command['arguments']['name'] in home_folders:
             temp_path = '~/' + command['arguments']['name'].title() # /home/username/music becomes /home/username/Music
-            path = os.path.expanduser(temp_path)
+            path = os.path.expanduser(temp_path)           
 
         output = {
             'commands': [],
@@ -345,6 +347,38 @@ def file_explorer(command, device, output):
         }
         return output
 
+    elif command['intent'] == '--display-dir':
+        directories = []
+        for dir_name, subdir_list, file_list in os.walk(path):
+            directories[:] = [d for d in subdir_list if not d[0] == '.'] # Read 'display' docs
+            break
+        output = {
+            'commands': [],
+            'error': False,
+            'final': True,
+            'parsed': command,
+            'message': ' Directories ',
+            'path': path,
+            'option_dir': directories,
+        }
+        return output
+
+    elif command['intent'] == '--display-files':
+        files = []
+        for dir_name, subdir_list, file_list in os.walk(path):
+            files = [f for f in file_list if not f[0] == '.'] # Read 'display' docs
+            break
+        output = {
+            'commands': [],
+            'error': False,
+            'final': True,
+            'parsed': command,
+            'message': ' Files ',
+            'path': path,
+            'option_files': files
+        }
+        return output        
+
     elif command['intent'] == '--hidden':
         directories = []
         files = []
@@ -360,6 +394,38 @@ def file_explorer(command, device, output):
             'message': ' Hidden directories and Files ',
             'path': path,
             'option_dir': directories,
+            'option_files': files
+        }
+        return output
+
+    elif command['intent'] == '--hidden-dir':
+        directories = []
+        for dir_name, subdir_list, file_list in os.walk(path):
+            directories[:] = [d for d in subdir_list if d[0] == '.'] # Read display docs
+            break
+        output = {
+            'commands': [],
+            'error': False,
+            'final': True,
+            'parsed': command,
+            'message': ' Hidden directories ',
+            'path': path,
+            'option_dir': directories,
+        }
+        return output        
+
+    elif command['intent'] == '--hidden-files':
+        files = []
+        for dir_name, subdir_list, file_list in os.walk(path):
+            files = [f for f in file_list if f[0] == '.'] # Read display docs
+            break
+        output = {
+            'commands': [],
+            'error': False,
+            'final': True,
+            'parsed': command,
+            'message': ' Hidden files ',
+            'path': path,
             'option_files': files
         }
         return output
@@ -405,7 +471,20 @@ def file_explorer(command, device, output):
             'type': None,
             'path': path
         }
-        return output                    
+        return output
+
+    elif command['intent'] == '--reset-path':
+        path = ''
+        output = {
+            'commands': [],
+            'error': False,
+            'final': True,
+            'parsed': command,
+            'message': 'Path has been reset',
+            'type': None,
+            'path': path
+        }
+        return output        
 
 def tetris(command, device, output):
     return output

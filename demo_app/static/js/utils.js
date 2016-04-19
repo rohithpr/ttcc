@@ -61,6 +61,30 @@ var utils = {
       })
     }
 
+    // else if (currentSession === 'file_explorer') {
+    //   newCommand = false
+    //   oldResult = {
+    //     'commands': ['file explorer '],
+    //     'final': True,
+    //     'parsed': {
+    //       'arguments': {},
+    //       'device': 'file_explorer',
+    //       'intent': '--reset'
+    //     },
+    //     'message': 'Path has been reset',
+    //     'type': None,
+    //     'path': ''
+    //   }
+    //   $.ajax({
+    //     url: '/command',
+    //     data: {
+    //       newCommand: false,
+    //       oldResult: JSON.stringify(oldResult),
+    //     },
+    //     method: 'POST'
+    //   })      
+    // }
+
     newCommand = true
     oldResult = {}
     currentSession = ''
