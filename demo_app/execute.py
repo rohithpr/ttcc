@@ -80,6 +80,8 @@ def totem(command, device, output):
                     'type': None,
                 }
                 cl += ' "' + matched_files[0] + '"'
+                #find length
+                #add duration in output
 
     cl += ' &'
     return_value = os.system(cl)
@@ -329,11 +331,9 @@ def file_explorer(command, device, output):
         return output
 
     elif command['intent'] == '--display':
-        directories = []
-        files = []
         for dir_name, subdir_list, file_list in os.walk(path):
             files = [f for f in file_list if not f[0] == '.'] # f and d are just temporary variables in order to check if it is a hidden file/directory or not
-            directories[:] = [d for d in subdir_list if not d[0] == '.'] # The dirs[:] = slice assignment; we are replacing the elements in dirs (and not the list referred to by dirs) so that os.walk() will not process deleted directories.
+            directories = [d for d in subdir_list if not d[0] == '.']
             break
         output = {
             'commands': [],
@@ -348,9 +348,8 @@ def file_explorer(command, device, output):
         return output
 
     elif command['intent'] == '--display-dir':
-        directories = []
         for dir_name, subdir_list, file_list in os.walk(path):
-            directories[:] = [d for d in subdir_list if not d[0] == '.'] # Read 'display' docs
+            directories = [d for d in subdir_list if not d[0] == '.']
             break
         output = {
             'commands': [],
@@ -364,9 +363,8 @@ def file_explorer(command, device, output):
         return output
 
     elif command['intent'] == '--display-files':
-        files = []
         for dir_name, subdir_list, file_list in os.walk(path):
-            files = [f for f in file_list if not f[0] == '.'] # Read 'display' docs
+            files = [f for f in file_list if not f[0] == '.']
             break
         output = {
             'commands': [],
@@ -380,11 +378,9 @@ def file_explorer(command, device, output):
         return output        
 
     elif command['intent'] == '--hidden':
-        directories = []
-        files = []
         for dir_name, subdir_list, file_list in os.walk(path):
-            files = [f for f in file_list if f[0] == '.'] # Read display docs
-            directories[:] = [d for d in subdir_list if d[0] == '.'] # Read display docs
+            files = [f for f in file_list if f[0] == '.']
+            directories = [d for d in subdir_list if d[0] == '.']
             break
         output = {
             'commands': [],
@@ -399,9 +395,8 @@ def file_explorer(command, device, output):
         return output
 
     elif command['intent'] == '--hidden-dir':
-        directories = []
         for dir_name, subdir_list, file_list in os.walk(path):
-            directories[:] = [d for d in subdir_list if d[0] == '.'] # Read display docs
+            directories = [d for d in subdir_list if d[0] == '.']
             break
         output = {
             'commands': [],
@@ -415,9 +410,8 @@ def file_explorer(command, device, output):
         return output        
 
     elif command['intent'] == '--hidden-files':
-        files = []
         for dir_name, subdir_list, file_list in os.walk(path):
-            files = [f for f in file_list if f[0] == '.'] # Read display docs
+            files = [f for f in file_list if f[0] == '.']
             break
         output = {
             'commands': [],
@@ -431,7 +425,7 @@ def file_explorer(command, device, output):
         return output
 
     elif command['intent'] == '--move-up':
-        path = os.path.dirname(path) # Return the directory name of pathname path  https://docs.python.org/3/library/os.path.html#os.path.dirname
+        path = os.path.dirname(path) # Return the directory name of pathname 
 
         output = {
             'commands': [],
