@@ -45,14 +45,13 @@ $(document).ready(function() {
       data.input = inputContent // The latest command that has been issued
       data.newCommand = newCommand
       data.oldResult = JSON.stringify(oldResult)
-      console.log('submitting:', data)
-
+      console.log('Submitting :', data)
       $.ajax({
         url: '/command',
         method: 'POST',
         data: data,
         success: function(result) {
-          console.log('success:', result)
+          console.log('Received :', result)
           if (result.error === true) {
              oldResult = {}
              newCommand = true
@@ -157,7 +156,6 @@ $(document).ready(function() {
           }
         },
         error: function(a, b, c) {
-          console.log(a, b, c)
           $('#message').html('Something went wrong. Please try again.').show().parent().show()
         }
       })
