@@ -80,9 +80,10 @@ def file_explorer_parser(operations, sentence):
             break
     return intent
 
-def parse(sentence, newCommand, oldResult, output):
+def parse(sentence, newCommand, oldResult, currentSession, output):
     if newCommand == 'false' and oldResult['type'] == 'option': # When the given command has many options to deal with
         device = DEVICES[oldResult['parsed']['device']]
+
         if oldResult['option-type'] == 'arguments':
             try:
                 optionSelected = utils.text2int(sentence) - 1
@@ -115,11 +116,21 @@ def parse(sentence, newCommand, oldResult, output):
     else:
         devices = parse_device(sentence)
         if devices == []: # If no device was matched
-            return {'message': 'No devices matched'}
+            target_device = currentSession
         elif len(devices) > 1: # If more than one device and/or alias was found
             target_device = select_device(devices)
         else:
             target_device = devices[0][0]
+            if currentSession != '' and target_device != currentSession:
+                print('currentSession', currentSession)
+                response = {
+                    'device': currentSession,
+                    'intent': 'Unknown'
+                }
+                device = None
+                output['message'] = 'Please start a new session to interact with another application'
+                output['dont_execute'] = True
+                return response, device, output
 
         operations = DEVICES[target_device]['operations']
         if target_device == 'file_explorer':

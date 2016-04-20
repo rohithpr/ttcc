@@ -10,7 +10,7 @@ var player // SoundCloud widget reference.
 
 // Initializing SCloud object
 SC.initialize({
-  client_id : 'c9908bc952a42fbf6b8e30c4b0ad6899'
+  client_id : SoundCloud.client_id
 })
 
 $(document).ready(function() {
@@ -44,6 +44,7 @@ $(document).ready(function() {
       var data = {} // The object that will be sent to the server
       data.input = inputContent // The latest command that has been issued
       data.newCommand = newCommand
+      data.currentSession = currentSession
       data.oldResult = JSON.stringify(oldResult)
       console.log('Submitting :', data)
       $.ajax({
@@ -57,19 +58,18 @@ $(document).ready(function() {
              newCommand = true
           }
 
-          // Show details on screen
-          var panel = utils.generateDiv()
-          var parsedResult = JSON.stringify(result.parsed, null, 2) // The JSON object that has been returned
-          var parsed = $('<pre>').html(parsedResult)
-          var message = $('<pre>').html(result.message)
-          panel.find('.box').append(message)
-          $('.holder').prepend(panel) // Add it to the webpage
-
           // If current command has been executed completely
           if (result.final === true) {
             oldResult = {}
             newCommand = true
+            // Show details on screen
+            var panel = utils.generateDiv()
+            var parsedResult = JSON.stringify(result.parsed, null, 2) // The JSON object that has been returned
+            var parsed = $('<pre>').html(parsedResult)
+            var message = $('<pre>').html(result.message)
+            panel.find('.box').append(message)
             panel.find('.box').append(parsed)
+            $('.holder').prepend(panel) // Add it to the webpage
 
             if (result.tweet !== undefined) {
               var panel = utils.generateDiv()
@@ -121,15 +121,27 @@ $(document).ready(function() {
               currentSession = 'totem'
             }
 
-            //If file explorer
+            // If file explorer
             if (result.parsed && result.parsed.device === 'file_explorer') {
               currentSession = 'file_explorer'
               fileExplorerHandler(result)
-            }            
+            }
+
+            // If weather
+            if (result.parsed && result.parsed.device === 'forecast') {
+              currentSession = 'forecast'
+            }
           }
 
           // Needs confirmation or more information
           else if (result.final === false) {
+            // Show details on screen
+            var panel = utils.generateDiv()
+            var parsedResult = JSON.stringify(result.parsed, null, 2) // The JSON object that has been returned
+            var parsed = $('<pre>').html(parsedResult)
+            var message = $('<pre>').html(result.message)
+            panel.find('.box').append(message)
+
             oldResult = result
             newCommand = false
             if (result.options !== undefined) {
@@ -153,6 +165,7 @@ $(document).ready(function() {
               panel.find('.box').append(optionsPre)
             }
             panel.find('.box').append(parsed)
+            $('.holder').prepend(panel) // Add it to the webpage
           }
         },
         error: function(a, b, c) {

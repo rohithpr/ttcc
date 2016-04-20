@@ -36,6 +36,7 @@ def name_matcher(text, filename):
 def totem(command, device, output):
     cl = 'totem ' + command['intent']
     if command['intent'] == '--play':
+        print(command)
         for alias in device['alias']:
             command['arguments']['name'] = command['arguments']['name'].replace(alias, 'totem')
 
@@ -51,7 +52,6 @@ def totem(command, device, output):
         # If the name of a song is mentioned `totem --play songname` will be executed
         if command['arguments']['name']:
             command['arguments']['name'] = command['arguments']['name'].strip(' ')
-            
             matched_files = [] # Keep track of all the files that match
 
             # Walk in the required directories to find music
@@ -83,7 +83,6 @@ def totem(command, device, output):
                     'duration': duration
                 }
                 cl += ' "' + matched_files[0] + '"'
-
     cl += ' &'
     return_value = os.system(cl)
     if return_value == 0:
@@ -128,7 +127,6 @@ def tweet(command, device, output):
             for item in response:
                 string = item['text'].replace('\n', '<br />')
                 tweets.append(string)
-        
         # FOR MAKING HREF LINKS
         no_of_tweets = len(tweets)
         for i in range(no_of_tweets):
@@ -162,15 +160,9 @@ def tweet(command, device, output):
              'type': None,
              'tweet': tweets
         }
-        return output    
-    
-    except:    
-        output = {    
-           'message':'invalid input', 
-           'error':True,
+        return output    except:        output = {           'message':'invalid input',           'error':True,
            'final':True
-        }    
-        return output
+        }        return output
 
 
 
@@ -198,58 +190,51 @@ def weather(command, device, output):
             output['final'] = False
             output['message'] = 'now ask what you want'
             return output
-        
         input_array = output['input'].split()
         if 'today' in input_array:
-            day = 0 # day == 0 represents today 
-        elif 'tomorrow' in input_array:
+            day = 0 # day == 0 represents today        elif 'tomorrow' in input_array:
             day = 1
         elif 'yesterday' in input_array: # when input is on yesterday's weather, should be handled later
-            day =0 
-        elif 'week' in input_array:
+            day =0        elif 'week' in input_array:
             day = 6
         else:
             day = 0
 
         # below line is used to get weather report history
         # res = requests.get('http://api.openweathermap.org/data/2.5/history/city?q=Bangalore,IN&type=hour')
-        
-        response = requests.get('http://api.openweathermap.org/data/2.5/forecast/daily?q='+city+'&cnt={1}')
+        response = requests.get('http://api.openweathermap.org/data/2.5/forecast/daily?q='+city+'&APPID='+appid)
         result = response.json()
         epoc_time = result['list'][day]['dt'] # time is in epoch format
         date_time = time.gmtime(epoc_time) # convert UNIX time representation to date time
         info.append(result['city']['name'])
         info.append('Date : '+str(' '.join(str(e) for e in date_time[0:3]))) # getting only year, month, and day
-        
         if command['intent'] == 'minTemperature':
             weather_report.append('Minimum Temperature is '+str(result['list'][day]['temp']['min']))
-        
         elif command['intent'] == 'maxTemperature':
             weather_report.append('Maximum Temperature is '+str(result['list'][day]['temp']['max']))
-            
         elif command['intent'] == 'will': # ex: will it rain tomorrow
             if 'rain' in input_array:
                 if 'rain' in result['list'][day].keys():
-                    weather_report.append('Yes it rains today') 
-                    weather_report.append('Rain upto '+str(result['list'][day]['rain']) + ' millimetres is expected')
+                    weather_report.append('Yes it rains today')                    weather_report.append('Rain upto '+str(result['list'][day]['rain']) + ' millimetres is expected')
                 else:
                     weather_report.append('no rain')
-            elif 'cloudy' in input_array:
-                if result['list'][day]['weather'][0]['description'] == 'few clouds': # need to check on 'main' in returned json
-                    weather_report.append('yes its cloudy')
+            elif 'sunny' in input_array:
+                if result['list'][day]['temp']['max'] > 303:
+                    weather_report.append('yes its sunny, you may even need umbrella')
                 else:
-                    weather_report.append('not cloudy')
+                    weather_report.append('No')
             else:
-                pass # ex: will it be sunny tomorrow "to be handled becacause of some calculations to compute"
+                if result['list'][day]['weather'][0]['main'] == 'Clouds': # need to check on 'main' in returned json
+                    weather_report.append('Yes its cloudy')
+                    weather_report.append(result['list'][day]['weather'][0]['description'])
+                else:
+                    weather_report.append('Not cloudy')
 
         elif command['intent'] == 'humidity':
             weather_report.append(result['list'][day]['humidity'])
-            
         elif command['intent'] == 'windspeed':
             weather_report.append(result['list'][day]['speed'])
-            
-        elif command['intent'] == 'need': # ex: do i need an umbrella, 
-            if 'rain' in result['list'][day].keys(): # need one when it is raining
+        elif command['intent'] == 'need': # ex: do i need an umbrella,            if 'rain' in result['list'][day].keys(): # need one when it is raining
                 weather_report.append('Yes, you need an umbrella')
                 weather_report.append('Rain upto '+str(result['list'][day]['rain']) + ' millimetres is expected')
             elif round(result['list'][day]['temp']['max'] -273, 2) > 30.00: # need one when its hot
@@ -283,12 +268,9 @@ def weather(command, device, output):
             }
         return output
     except:
-        output = {    
-           'message':'invalid input', 
-           'error':True,
+        output = {           'message':'invalid input',           'error':True,
            'final':True
-        }    
-        return output
+        }        return output
 
 def file_explorer(command, device, output):
     global path
@@ -301,8 +283,7 @@ def file_explorer(command, device, output):
             'message': 'Executed command',
             'type': None,
             'path': path
-        }    
-        return output
+        }        return output
 
     if command['intent'] == '--goto':
         home_folders = ['desktop','documents','music','pictures','videos','public','templates']
@@ -314,8 +295,7 @@ def file_explorer(command, device, output):
 
         elif command['arguments']['name'] in home_folders:
             temp_path = '~/' + command['arguments']['name'].title() # /home/username/music becomes /home/username/Music
-            path = os.path.expanduser(temp_path)           
-
+            path = os.path.expanduser(temp_path)
         output = {
             'commands': [],
             'error': False,
@@ -324,7 +304,7 @@ def file_explorer(command, device, output):
             'message': 'Executed command',
             'type': None,
             'path': path
-        }    
+        }
         return output
 
     if command['intent'] == '--reset-path':
@@ -385,8 +365,7 @@ def file_explorer(command, device, output):
             'path': path,
             'option_files': files
         }
-        return output        
-
+        return output
     if command['intent'] == '--hidden':
         for dir_name, subdir_list, file_list in os.walk(path):
             files = [f for f in file_list if f[0] == '.']
@@ -417,8 +396,7 @@ def file_explorer(command, device, output):
             'path': path,
             'option_dir': directories,
         }
-        return output        
-
+        return output
     if command['intent'] == '--hidden-files':
         for dir_name, subdir_list, file_list in os.walk(path):
             files = [f for f in file_list if f[0] == '.']
@@ -435,8 +413,7 @@ def file_explorer(command, device, output):
         return output
 
     if command['intent'] == '--move-up':
-        path = os.path.dirname(path) # Return the directory name of pathname 
-
+        path = os.path.dirname(path) # Return the directory name of pathname
         output = {
             'commands': [],
             'error': False,
