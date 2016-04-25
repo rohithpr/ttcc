@@ -38,7 +38,7 @@ We can improve the usability of the system by having a simple interface that doe
 Functional Requirements:
 The application should display relevant information to the user so that they know what is happening.
 Application has a web interface for user interaction, where user gives voice input and output message is displayed.
-Parsing of input commands is based on rules generated, as our application is rule based.
+Parsing of input commands is based on rules generated, as our application is rule based. 
 
 
 Software Requirements:
